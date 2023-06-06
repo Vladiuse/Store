@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-1%8+0owra6zm=0gp=7$h!#jtkv+d=3mil!iod6+@m99#03)8q$
 DEBUG = True
 
 ALLOWED_HOSTS = ['test.vim-store.ru', '127.0.0.1']
+CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = ['http://127.0.0.1']
 
 # Application definition
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #apps
     'rest_framework',
+    'corsheaders',
     'buttons.apps.ButtonsConfig'
 ]
 
