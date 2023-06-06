@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-1%8+0owra6zm=0gp=7$h!#jtkv+d=3mil!iod6+@m99#03)8q$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['test.vim-store.ru']
+ALLOWED_HOSTS = ['test.vim-store.ru', '127.0.0.1']
 
 # Application definition
 
@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #apps
+    'buttons.apps.ButtonsConfig'
 ]
 
 MIDDLEWARE = [
