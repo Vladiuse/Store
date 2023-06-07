@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #apps
     'rest_framework',
+    'drf_yasg',
     'corsheaders',
     'buttons.apps.ButtonsConfig'
 ]

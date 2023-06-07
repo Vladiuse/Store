@@ -7,6 +7,7 @@ from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Book, Genre
+from rest_framework import permissions
 
 
 def index(request):
@@ -34,3 +35,4 @@ class BookViewSet(ModelViewSet):
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
