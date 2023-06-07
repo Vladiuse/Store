@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework.viewsets import ModelViewSet
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, BookSerializer, GenreSerializer
+from .serializers import  BookSerializer, GenreSerializer
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -21,11 +21,6 @@ def api_root(request, format=None):
         'books': reverse('book-list', request=request, format=format),
         'genres': reverse('genre-list', request=request, format=format),
     })
-
-
-class UserViewSet(ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
 
 class BookViewSet(ModelViewSet):
