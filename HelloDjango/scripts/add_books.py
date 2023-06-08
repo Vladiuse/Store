@@ -33,6 +33,38 @@ books_data = [
         'name': 'Преступление и наказание',
         'image_name': 'pp.webp'
     },
+    {
+        'name': 'Последний из могикан',
+        'image_name': 'm.jpg'
+    },
+    {
+        'name': 'Затерянный мир',
+        'image_name': 'zz.png'
+    },
+    {
+        'name': 'Айвенго',
+        'image_name': 'aa.png'
+    },
+    {
+        'name': 'Костяной лабиринт',
+        'image_name': 'kl.jpg'
+    },
+    {
+        'name': 'Копи царя Соломона',
+        'image_name': 'kcs.png'
+    },
+    {
+        'name': 'Граф Монте-Кристо',
+        'image_name': 'gmc.png'
+    },
+    {
+        'name': 'Одиссея капитана Блада',
+        'image_name': 'okb.png'
+    },
+    {
+        'name': 'Королева Марго',
+        'image_name': 'km.jpg'
+    },
     # {
     #     'name': 'XXXXX',
     #     'image_name': 'XXXXXXX'
@@ -56,6 +88,7 @@ def create_books():
             name=book['name'],
             price=round(r.random()*100,2),
             author=r.choice(authors),
+            available_in_store=r.randint(1,5),
             image=SimpleUploadedFile(
                 name='x.jpg',
                 content=open(image_path, 'rb').read(),
