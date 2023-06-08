@@ -11,7 +11,9 @@ def set_random_data_to_profiles():
         profile.last_name = ru_faker.last_name()
         profile.age = r.randint(13, 120)
         profile.sex = r.choice(Profile.SEX_CHOICE)[0]
+        profile.address = ru_faker.address()
         profile.save()
+    print('Profiles feeded')
 
 
 set_random_data_to_profiles()

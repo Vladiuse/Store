@@ -37,6 +37,7 @@ class Profile(models.Model):
 
     user = models.OneToOneField(
         MyUser,
+        primary_key=True,
         on_delete=models.CASCADE,
     )
     first_name = models.CharField(
@@ -58,6 +59,10 @@ class Profile(models.Model):
         choices=SEX_CHOICE,
         default=NO_SEX,
     )
+    address = models.CharField(
+        max_length=150,
+        blank=True,
+    )
 
     def delete(self, **kwargs):
         self.user.delete()
@@ -66,11 +71,46 @@ class Profile(models.Model):
         return f'{self.pk} {self.user.username}: {self.first_name}'
 
 
+class Author(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
+class BookManager(models.Manager):
+
+    def get_queryset(self):
+        return Book.objects.filter(is_public=True)
+
+
 class Book(models.Model):
-    name = models.CharField(max_length=30)
-    price = models.FloatField(default=0)
-    genre = models.ManyToManyField('Genre', blank=True)
-    image = models.ImageField(upload_to='book_images', blank=True)
+    name = models.CharField(
+        max_length=30
+    )
+    price = models.FloatField(
+        default=0
+    )
+    genre = models.ManyToManyField(
+        'Genre',
+        blank=True
+    )
+    image = models.ImageField(
+        upload_to='book_images',
+        blank=True
+    )
+    is_public = models.BooleanField(
+        default=True
+    )
+    description = models.TextField(
+        blank=True
+    )
+    author = models.ForeignKey(
+        Author,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return self.name

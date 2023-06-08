@@ -21,6 +21,7 @@ def create_fake_users(num=5):
             username=f.first_name(),
             password='0000',
         )
+    print('User created:', MyUser.objects.count())
 
 
 delete_all_users()

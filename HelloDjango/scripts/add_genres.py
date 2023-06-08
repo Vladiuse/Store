@@ -18,6 +18,7 @@ def delete_all_genres():
 def create_genres():
     for name in genres:
         Genre.objects.create(name=name)
+    print('Genre created:', Genre.objects.count())
 
 
 delete_all_genres()

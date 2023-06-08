@@ -4,9 +4,11 @@ from .models import Book, Genre, MyUser, Profile
 
 class BookSerializer(serializers.ModelSerializer):
 
+    genre = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = Book
-        fields = '__all__'
+        fields = ['id', 'name', 'price', 'image', 'genre']
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -18,11 +20,9 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
 
-    user = serializers.ReadOnlyField(source='user.username')
-
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'first_name', 'last_name', 'age']
+        fields = ['first_name', 'last_name', 'age', 'sex']
 
 
 class UserSerializer(serializers.ModelSerializer):

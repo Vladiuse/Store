@@ -1,5 +1,5 @@
 import os
-from buttons.models import Book, Genre
+from buttons.models import Book, Genre, Author
 from django.core.files.uploadedfile import SimpleUploadedFile
 import random as r
 
@@ -49,11 +49,13 @@ def delete_all_books():
 
 def create_books():
     genres = Genre.objects.all()
-    print(genres)
+    authors = Author.objects.all()
     for book in books_data:
         image_path = os.path.join(IMAGES_PATH, book['image_name'])
         book = Book.objects.create(
             name=book['name'],
+            price=round(r.random()*100,2),
+            author=r.choice(authors),
             image=SimpleUploadedFile(
                 name='x.jpg',
                 content=open(image_path, 'rb').read(),
@@ -61,7 +63,7 @@ def create_books():
         )
         g = r.choices(genres, k=r.randint(1,3))
         book.genre.set(g)
-    print('Books created')
+    print('Books created:', Book.objects.count())
 
 
 delete_all_books()
