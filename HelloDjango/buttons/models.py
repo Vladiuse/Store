@@ -11,10 +11,13 @@ class MyUserManager(UserManager):
     def create_user(self, *args, **kwargs):
         user = super().create_user(*args, **kwargs)
         Profile.objects.create(
-            first_name=kwargs['first_name'],
-            last_name=kwargs['last_name'],
             user=user,
         )
+        return user
+
+    def create_superuser(self, *args, **kwargs):
+        user = super().create_superuser(*args, **kwargs)
+        Profile.objects.create(user=user)
         return user
 
 
@@ -32,13 +35,29 @@ class Profile(models.Model):
         (WOMAN, 'Женский'),
     ]
 
-    user = models.OneToOneField(MyUser, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    age = models.PositiveIntegerField(
-        validators=[MinValueValidator(13), MaxValueValidator(120)]
+    user = models.OneToOneField(
+        MyUser,
+        on_delete=models.CASCADE,
     )
-    sex = models.CharField(max_length=6,choices=SEX_CHOICE, default=NO_SEX)
+    first_name = models.CharField(
+        blank=True,
+        max_length=50,
+    )
+    last_name = models.CharField(
+        blank=True,
+        max_length=50,
+    )
+    age = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(13), MaxValueValidator(120)],
+    )
+    sex = models.CharField(
+        max_length=6,
+        blank=True,
+        choices=SEX_CHOICE,
+        default=NO_SEX,
+    )
 
     def delete(self, **kwargs):
         self.user.delete()

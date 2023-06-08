@@ -3,7 +3,7 @@ from buttons.models import Book, Genre
 from django.core.files.uploadedfile import SimpleUploadedFile
 import random as r
 
-IMAGES_PATH = './scripts/books/images/'
+IMAGES_PATH = './scripts/books_images/'
 books_data = [
     {
         'name': 'повелитель мух',

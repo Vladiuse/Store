@@ -12,8 +12,6 @@ def create_vlad():
     MyUser.objects.create_superuser(
         username='vlad',
         password='2030',
-        first_name='xx',
-        last_name='xxx',
     )
 
 
@@ -22,8 +20,6 @@ def create_fake_users(num=5):
         MyUser.objects.create_user(
             username=f.first_name(),
             password='0000',
-            first_name='xx',
-            last_name='xxx',
         )
 
 
