@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Book, Genre, MyUser
+from .models import Book, Genre, MyUser, Profile
 
 class BookSerializer(serializers.ModelSerializer):
 
@@ -16,8 +16,18 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UserSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
+
+    user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
+        model = Profile
+        fields = ['id', 'user', 'first_name', 'last_name', 'age']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+    class Meta:
         model = MyUser
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'username', 'email','is_staff', 'profile', 'date_joined']
+
