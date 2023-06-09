@@ -1,4 +1,4 @@
-from buttons.models import Genre
+from store.models import Genre
 
 
 genres = [

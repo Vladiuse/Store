@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     'django_extensions',
-    'buttons.apps.ButtonsConfig'
+    'buttons.apps.ButtonsConfig',
+    'store.apps.StoreConfig',
 ]
 
 MIDDLEWARE = [
@@ -123,7 +124,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-AUTH_USER_MODEL = 'buttons.MyUser'
+AUTH_USER_MODEL = 'store.MyUser'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 

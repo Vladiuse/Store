@@ -20,10 +20,14 @@ from .yasg import urlpatterns as doc_urls
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from .api_root import index
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('buttons.urls')),
+    path('', index),
+    path('buttons/', include('buttons.urls')),
+    path('store/', include('store.urls')),
 ]
 
 urlpatterns += doc_urls

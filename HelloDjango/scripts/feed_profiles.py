@@ -1,4 +1,4 @@
-from buttons.models import Profile
+from store.models import Profile
 from faker import Faker
 import random as r
 

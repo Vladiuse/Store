@@ -1,5 +1,5 @@
 import os
-from buttons.models import Book, Genre, Author
+from store.models import Book, Genre, Author
 from django.core.files.uploadedfile import SimpleUploadedFile
 import random as r
 from faker import Faker

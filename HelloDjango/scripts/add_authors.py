@@ -1,4 +1,4 @@
-from buttons.models import Author
+from store.models import Author
 
 
 authors = [
