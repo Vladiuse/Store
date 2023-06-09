@@ -129,7 +129,7 @@ class Book(models.Model):
 
 class Comment(models.Model):
     user = models.ForeignKey(
-        User,
+        MyUser,
         on_delete=models.CASCADE,
     )
     book = models.ForeignKey(
@@ -137,8 +137,8 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
     )
     text = models.TextField()
-    created = models.DateField(
-        auto_created=True,
+    created = models.DateTimeField(
+        auto_now_add=True,
     )
     stars = models.PositiveIntegerField(
         validators=[MaxValueValidator(5),]
@@ -146,7 +146,6 @@ class Comment(models.Model):
 
     class Meta:
         unique_together = ['user', 'book']
-
 
 
 class Genre(models.Model):
