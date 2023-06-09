@@ -127,6 +127,28 @@ class Book(models.Model):
         super().delete()
 
 
+class Comment(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+    )
+    text = models.TextField()
+    created = models.DateField(
+        auto_created=True,
+    )
+    stars = models.PositiveIntegerField(
+        validators=[MaxValueValidator(5),]
+    )
+
+    class Meta:
+        unique_together = ['user', 'book']
+
+
+
 class Genre(models.Model):
     name = models.CharField(
         max_length=30,

@@ -2,6 +2,7 @@ import os
 from buttons.models import Book, Genre, Author
 from django.core.files.uploadedfile import SimpleUploadedFile
 import random as r
+from faker import Faker
 
 IMAGES_PATH = './scripts/books_images/'
 books_data = [
@@ -71,7 +72,7 @@ books_data = [
     # },
 ]
 
-
+ru_faker = Faker('ru_RU')
 
 def delete_all_books():
     for book in Book.objects.all():
@@ -89,6 +90,7 @@ def create_books():
             price=round(r.random()*100,2),
             author=r.choice(authors),
             available_in_store=r.randint(1,5),
+            description=ru_faker.paragraph(nb_sentences=5),
             image=SimpleUploadedFile(
                 name='x.jpg',
                 content=open(image_path, 'rb').read(),
