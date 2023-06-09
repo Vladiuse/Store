@@ -19,6 +19,8 @@ def test(request):
         'style':style,
     }
     return render(request, 'buttons/test.html', content)
+
+
 @api_view()
 def buttons_api_root(request, format=None):
     return Response({
@@ -27,6 +29,14 @@ def buttons_api_root(request, format=None):
         'sub_buttons': reverse('subbutton-list', request=request, format=format),
         'test': reverse('test', request=request, format=format),
     })
+
+
+@api_view()
+def sub_buttons(request, button_id, format=None):
+    button = Button.objects.get(pk=button_id)
+    subs = SubButton.objects.filter(parent=button)
+    serializer = SubButtonSerializer(subs, many=True)
+    return Response({'subs':serializer.data})
 
 class LanguageViewSet(viewsets.ModelViewSet):
     queryset = Language.objects.all()

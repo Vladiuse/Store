@@ -26,8 +26,8 @@ from .api_root import index
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index),
-    path('buttons/', include('buttons.urls')),
-    path('store/', include('store.urls')),
+    path('buttons_app/', include('buttons.urls')),
+    path('store_app/', include('store.urls')),
 ]
 
 urlpatterns += doc_urls

@@ -11,9 +11,17 @@ class LanguageSerializer(serializers.ModelSerializer):
 
 
 class ButtonSerializer(serializers.ModelSerializer):
+    subs = serializers.HyperlinkedIdentityField(
+        view_name='subs_buttons',
+        format='html',
+        lookup_url_kwarg='button_id',
+    )
+
     class Meta:
         model = Button
-        fields = '__all__'
+        fields = [
+            'id', 'name', 'type', 'text', 'colored_text',
+            'subs']
 
 
 class SubButtonSerializer(serializers.ModelSerializer):

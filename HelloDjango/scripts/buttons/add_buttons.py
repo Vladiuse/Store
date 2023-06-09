@@ -1,4 +1,4 @@
-from buttons.models import Button, Language
+from buttons.models import Button, Language, SubButton
 
 
 CODES = [
@@ -123,3 +123,11 @@ for item in CODES:
         type= Language.objects.get(pk=item['name']),
         name=item['name'],
     )
+
+button = Button.objects.get(name='html')
+SubButton.objects.create(
+    name='SUB',
+    type= Language.objects.get(pk='html'),
+    text='<h1>Some text SUB</h1>',
+    parent=button,
+)

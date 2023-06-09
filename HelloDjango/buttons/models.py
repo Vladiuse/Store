@@ -23,7 +23,8 @@ class Language(models.Model):
     def __str__(self):
         return self.name
 
-class Button(models.Model):
+
+class AbstractButton(models.Model):
     name = models.CharField(
         max_length=50,
         unique=True
@@ -52,8 +53,15 @@ class Button(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        abstract = True
 
-class SubButton(Button):
+
+class Button(AbstractButton):
+    pass
+
+
+class SubButton(AbstractButton):
     parent = models.ForeignKey(
         Button,
         on_delete=models.CASCADE,

@@ -13,4 +13,5 @@ urlpatterns = [
     path('test/', views.test,name='test'),
     path('', views.buttons_api_root, name='buttons_root'),
     path('', include(router.urls),),
+    path('buttons/<int:button_id>/subs/', views.sub_buttons, name='subs_buttons'),
 ]
