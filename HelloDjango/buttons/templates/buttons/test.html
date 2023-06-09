@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        {{style}}
+        .highlight{
+            max-width: 700px;
+        }
+        .sub{
+        margin-left: 200px
+        }
+    </style>
+</head>
+<body>
+{%for button in buttons%}
+<h2>Button {{button.name}}</h2>
+{{button.colored_text|safe}}
+    {%for sub_button in button.sub_button.all%}
+    <div class="sub">
+        <h3>SubButton {{sub_button.name}}</h3>
+        {{sub_button.colored_text|safe}}
+    </div>
+    {%endfor%}
+{%endfor%}
+</body>
+</html>
