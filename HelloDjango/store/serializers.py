@@ -16,6 +16,7 @@ class BookListSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='book-detail')
     # genre = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     is_favorite = serializers.BooleanField(source='favorite', read_only=True)
+    add_favorite = serializers.HyperlinkedIdentityField(view_name='book-favorite')
 
     class Meta:
         model = Book

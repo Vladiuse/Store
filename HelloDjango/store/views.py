@@ -7,7 +7,7 @@ from .serializers import BookSerializer, GenreSerializer, UserSerializer, Author
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, action
-from .models import Book, Genre, MyUser, Author, Comment
+from .models import Book, Genre, MyUser, Author, Comment, Favorite
 from rest_framework import permissions
 from django.db.models import Count, Q
 
@@ -44,10 +44,32 @@ class BookViewSet(ModelViewSet):
         else:
             return self.queryset
 
-    # @action(detail=True)
-    # def is_favorite(self, request, pk):
-    #     if request.user in
-    #
+    @action(detail=True, methods=['patch',], permission_classes=[permissions.IsAuthenticated,])
+    def favorite(self, request, pk):
+        book = self.get_object()
+        if book.is_favorite.filter(user=request.user).exists():
+            raise ZeroDivisionError
+        Favorite.objects.create(user=request.user, book=book)
+        return Response({
+            'status':'Success',
+            'msg': 'book add to favorites'
+        })
+
+    @favorite.mapping.delete
+    def remove_from_favorite(self, request,pk):
+        book = self.get_object()
+        if not book.is_favorite.filter(user=request.user).exists():
+            raise ZeroDivisionError
+        Favorite.objects.get(user=request.user, book=book).delete()
+        return Response({
+            'status':'Success',
+            'msg': 'book remove from favorites'
+        })
+
+
+
+
+
 
 
 
