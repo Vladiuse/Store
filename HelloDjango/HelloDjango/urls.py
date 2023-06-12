@@ -26,6 +26,7 @@ from .api_root import index
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("__debug__/", include("debug_toolbar.urls")),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('', index),
     path('buttons_app/', include('buttons.urls')),
     path('store_app/', include('store.urls')),

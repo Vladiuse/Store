@@ -6,8 +6,13 @@ from rest_framework.reverse import reverse
 @api_view()
 def index(request, format=None):
     return Response({
-        'buttons': reverse('buttons_root', request=request, format=format),
-        'store': reverse('store', request=request, format=format),
+    'apps':{
+        'buttons_app': reverse('buttons_root', request=request, format=format),
+        'store_app': reverse('store', request=request, format=format),
+    },
+    'docs':{
         'swagger': reverse('schema-swagger-ui', request=request, format=format),
         'redoc': reverse('schema-redoc', request=request, format=format),
-    })
+    }
+})
+

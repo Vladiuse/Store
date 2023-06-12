@@ -33,7 +33,7 @@ class BookViewSet(ModelViewSet):
         return self.serializer_class
 
     def get_queryset(self):
-        if self.request.user:
+        if self.request.user.is_authenticated:
             qs = Book.objects.\
                 prefetch_related('is_favorite'). \
                 prefetch_related('genre').\
