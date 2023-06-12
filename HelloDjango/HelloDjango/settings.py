@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #apps
     'rest_framework',
+    "debug_toolbar",
     'drf_yasg',
     'corsheaders',
     'django_extensions',
@@ -48,11 +49,18 @@ INSTALLED_APPS = [
     'store.apps.StoreConfig',
 ]
 
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
     'corsheaders.middleware.CorsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 
 
     'django.middleware.common.CommonMiddleware',

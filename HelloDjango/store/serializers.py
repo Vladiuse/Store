@@ -4,14 +4,22 @@ from .models import Book, Genre, MyUser, Profile, Author, Comment
 
 class BookSerializer(serializers.ModelSerializer):
 
-    genre = serializers.StringRelatedField(many=True)
+    # genre = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     author = serializers.StringRelatedField()
 
     class Meta:
         model = Book
         fields = '__all__'
         # fields = ['id', 'name', 'price', 'image', 'genre', 'author', 'available_in_store', 'is']
+class BookListSerializer(serializers.ModelSerializer):
 
+    url = serializers.HyperlinkedIdentityField(view_name='book-detail')
+    # genre = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    is_favorite = serializers.BooleanField(source='favorite', read_only=True)
+
+    class Meta:
+        model = Book
+        exclude = ['description']
 
 class GenreSerializer(serializers.ModelSerializer):
 

@@ -1,4 +1,3 @@
-1945
 from django.db import models
 import os
 from django.contrib.auth.models import AbstractUser, User
@@ -119,6 +118,9 @@ class Book(models.Model):
         default=0
     )
 
+    class Meta:
+        ordering = ['pk',]
+
     def __str__(self):
         return self.name
 
@@ -126,6 +128,9 @@ class Book(models.Model):
         if self.image:
             os.remove(self.image.path)
         super().delete()
+
+    # def add_to_favorite(self, user):
+
 
 
 class Comment(models.Model):
@@ -157,3 +162,20 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        related_name='is_favorite',
+    )
+
+
+    class Meta:
+        unique_together = ['user', 'book']
+
+
+    def __str__(self):
+        return f'{self.user}:{self.book}'
