@@ -6,7 +6,7 @@ from .serializers import BookSerializer, GenreSerializer, UserSerializer, Author
     CommentSerializer, BookListSerializer
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
 from .models import Book, Genre, MyUser, Author, Comment, Favorite
 from rest_framework import permissions
 from django.db.models import Count, Q
@@ -14,13 +14,18 @@ from django.db.models import Count, Q
 
 @api_view()
 def api_root(request, format=None):
-    return Response({
+    urls = {
         'users': reverse('myuser-list', request=request, format=format),
         'books': reverse('book-list', request=request, format=format),
         'genres': reverse('genre-list', request=request, format=format),
         'authors': reverse('author-list', request=request, format=format),
         'comments': reverse('comment-list', request=request, format=format),
-    })
+    }
+    if request.user.is_authenticated:
+        urls.update({
+        'favorite': reverse('favorite', request=request, format=format),
+        })
+    return Response(urls)
 
 
 class BookViewSet(ModelViewSet):
@@ -93,3 +98,10 @@ class CommentViewSet(ModelViewSet):
 
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated,])
+def favorite_books(request, format=None):
+    books = Book.objects.prefetch_related('is_favorite').filter(is_favorite__user=request.user)
+    serializer = BookSerializer(books, many=True)
+    return Response(serializer.data)

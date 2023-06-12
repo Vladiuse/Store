@@ -12,5 +12,6 @@ router.register(r'comments', views.CommentViewSet)
 urlpatterns = [
     # path('', views.index, name='index'),
     path('', views.api_root, name='store'),
+    path('favorite/', views.favorite_books, name='favorite'),
     path('', include(router.urls)),
 ]

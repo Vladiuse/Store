@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Book, Genre, MyUser, Profile, Author, Comment
+from .models import Book, Genre, MyUser, Profile, Author, Comment, Favorite
 
 class BookSerializer(serializers.ModelSerializer):
 

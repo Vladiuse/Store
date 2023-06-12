@@ -165,7 +165,11 @@ class Genre(models.Model):
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        MyUser,
+        on_delete=models.CASCADE,
+        related_name='favorite',
+    )
     book = models.ForeignKey(
         Book,
         on_delete=models.CASCADE,
