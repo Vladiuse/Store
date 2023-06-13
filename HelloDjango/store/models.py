@@ -141,6 +141,7 @@ class Comment(models.Model):
     book = models.ForeignKey(
         Book,
         on_delete=models.CASCADE,
+        related_name='comment',
     )
     text = models.TextField()
     created = models.DateTimeField(
