@@ -85,6 +85,26 @@ class BookDetailView(
             'msg': 'book remove from favorites'
         })
 
+    @action(detail=True,methods=['GET'])
+    def comments(self,request, pk,):
+        book = self.get_object()
+        user_comment = None
+        if request.user.is_authenticated:
+            comments = book.comment.exclude(user=request.user)
+            try:
+                user_comment = Comment.objects.get(book=book, user=request.user)
+            except Comment.DoesNotExist:
+                pass
+        else:
+            comments = book.comment.all()
+        comments_serializer = CommentSerializer(comments, many=True)
+        user_comment_serializer = CommentSerializer(user_comment)
+        return Response({
+            'comments': comments_serializer.data,
+            'user_comment': user_comment_serializer.data if user_comment else None
+        })
+
+
 
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
@@ -107,9 +127,39 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
 
 
+class BookCommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def get_book(self):
+        return Book.objects.get(pk=self.kwargs['book_id'])
+
+    def list(self, request,*args, **kwargs):
+        book = self.get_book()
+        if request.user.is_authenticated:
+            comments = book.comment.exclude(user=request.user)
+            try:
+                user_comment = Comment.objects.get(book=book, user=request.user)
+            except Comment.DoesNotExist:
+                user_comment = None
+        else:
+            comments = book.comment.all()
+        comments_serializer = CommentSerializer(comments, many=True)
+        user_comment_serializer = CommentSerializer(user_comment)
+        return Response({
+            'comments': comments_serializer.data,
+            'user_comment': user_comment_serializer.data
+        })
+
+
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated, ])
 def favorite_books(request, format=None):
     books = Book.objects.prefetch_related('is_favorite').filter(is_favorite__user=request.user)
     serializer = BookDetailSerializer(books, many=True)
     return Response(serializer.data)
+
+
+def test(request, pk):
+    return Response({})

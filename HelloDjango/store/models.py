@@ -129,6 +129,9 @@ class Book(models.Model):
             os.remove(self.image.path)
         super().delete()
 
+    def comments_count(self):
+        return self.comment.count()
+
     # def add_to_favorite(self, user):
 
 
