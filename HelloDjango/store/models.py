@@ -11,13 +11,13 @@ class MyUserManager(UserManager):
     def create_user(self, *args, **kwargs):
         user = super().create_user(*args, **kwargs)
         Profile.objects.create(
-            user=user,
+            owner=user,
         )
         return user
 
     def create_superuser(self, *args, **kwargs):
         user = super().create_superuser(*args, **kwargs)
-        Profile.objects.create(user=user)
+        Profile.objects.create(owner=user)
         return user
 
 
@@ -35,7 +35,7 @@ class Profile(models.Model):
         (WOMAN, 'Женский'),
     ]
 
-    user = models.OneToOneField(
+    owner = models.OneToOneField(
         MyUser,
         primary_key=True,
         on_delete=models.CASCADE,
@@ -65,7 +65,7 @@ class Profile(models.Model):
     )
 
     def delete(self, **kwargs):
-        self.user.delete()
+        raise ZeroDivisionError
 
     def __str__(self):
         return f'{self.pk} {self.user.username}: {self.first_name}'

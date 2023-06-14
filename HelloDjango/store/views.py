@@ -1,23 +1,27 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+from django.db.models import Count, Q
 from rest_framework.viewsets import ModelViewSet
-from django.contrib.auth import get_user_model
-from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, action, permission_classes
-from .models import Book, Genre, MyUser, Author, Comment, Favorite
-from rest_framework import permissions
-from django.db.models import Count, Q
 from rest_framework import generics, mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.decorators import api_view, action, permission_classes
+from rest_framework import permissions
+from rest_framework.exceptions import MethodNotAllowed
+
+from .models import Book, Genre, MyUser, Author, Comment, Favorite, Profile
+from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
+    CommentSerializer, BookListSerializer, ProfileSerializer
+from .permisions import OwnerPermissions
+
+
+
 
 
 @api_view()
 def store_root(request, format=None):
     urls = {
-        'users': reverse('myuser-list', request=request, format=format),
+
         'books': reverse('book-list', request=request, format=format),
         'genres': reverse('genre-list', request=request, format=format),
         'authors': reverse('author-list', request=request, format=format),
@@ -26,6 +30,8 @@ def store_root(request, format=None):
 
     if request.user.is_authenticated:
         urls.update({
+            'users': reverse('myuser-list', request=request, format=format),
+            'profiles': reverse('profile-list', request=request, format=format),
             'favorite': reverse('favorite', request=request, format=format),
         })
     return Response(urls)
@@ -96,6 +102,16 @@ class GenreViewSet(ModelViewSet):
 class UserViewSet(ModelViewSet):
     queryset = MyUser.objects.all()
     serializer_class = UserSerializer
+
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated, OwnerPermissions,]
+
+    def destroy(self, request, *args, **kwargs):
+        raise MethodNotAllowed('DELETE')
+
 
 
 class AuthorViewSet(ModelViewSet):

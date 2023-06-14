@@ -23,8 +23,6 @@ class CommentSerializer(serializers.ModelSerializer):
         return obj
 
 
-
-
 class BookDetailSerializer(serializers.ModelSerializer):
     # genre = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     author = serializers.StringRelatedField()
@@ -58,9 +56,13 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='profile-detail')
     class Meta:
         model = Profile
-        fields = ['first_name', 'last_name', 'age', 'sex']
+        fields = ['owner','first_name', 'last_name', 'age', 'sex', 'url']
+        extra_kwargs = {
+            'owner': {'read_only': True}
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):
