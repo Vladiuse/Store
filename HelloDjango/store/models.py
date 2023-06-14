@@ -157,6 +157,9 @@ class Comment(models.Model):
     class Meta:
         unique_together = ['user', 'book']
 
+    def __str__(self):
+        return f'<Comment:{self.pk}> {self.user} {self.book.pk}:{self.book}'
+
 
 class Genre(models.Model):
     name = models.CharField(

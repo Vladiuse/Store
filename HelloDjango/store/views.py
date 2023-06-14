@@ -10,12 +10,12 @@ from rest_framework.decorators import api_view, action, permission_classes
 from .models import Book, Genre, MyUser, Author, Comment, Favorite
 from rest_framework import permissions
 from django.db.models import Count, Q
-from rest_framework import generics, mixins
+from rest_framework import generics, mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
 
 
 @api_view()
-def api_root(request, format=None):
+def store_root(request, format=None):
     urls = {
         'users': reverse('myuser-list', request=request, format=format),
         'books': reverse('book-list', request=request, format=format),
@@ -23,6 +23,7 @@ def api_root(request, format=None):
         'authors': reverse('author-list', request=request, format=format),
         'comments': reverse('comment-list', request=request, format=format),
     }
+
     if request.user.is_authenticated:
         urls.update({
             'favorite': reverse('favorite', request=request, format=format),
@@ -38,10 +39,10 @@ class BookListView(mixins.CreateModelMixin,
 
 
 class BookDetailView(
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   GenericViewSet):
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    GenericViewSet):
     queryset = Book.objects.prefetch_related('genre').prefetch_related('comment')
     serializer_class = BookDetailSerializer
 
@@ -57,12 +58,12 @@ class BookDetailView(
         else:
             return self.queryset
 
-    @action(methods=['PATCH'], detail=True, permission_classes=[permissions.IsAuthenticated,])
+    @action(methods=['PATCH'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
     def favorite(self, request, pk):
         book = self.get_object()
         if book.is_favorite.filter(user=request.user).exists():
             return Response({
-                'status':'error',
+                'status': 'error',
                 'msg': 'Book already in favorites'
             })
         Favorite.objects.create(user=request.user, book=book)
@@ -76,7 +77,7 @@ class BookDetailView(
         book = self.get_object()
         if not book.is_favorite.filter(user=request.user).exists():
             return Response({
-                'status':'error',
+                'status': 'error',
                 'msg': 'Book not in favorites'
             })
         Favorite.objects.get(user=request.user, book=book).delete()
@@ -84,26 +85,6 @@ class BookDetailView(
             'status': 'Success',
             'msg': 'book remove from favorites'
         })
-
-    @action(detail=True,methods=['GET'])
-    def comments(self,request, pk,):
-        book = self.get_object()
-        user_comment = None
-        if request.user.is_authenticated:
-            comments = book.comment.exclude(user=request.user)
-            try:
-                user_comment = Comment.objects.get(book=book, user=request.user)
-            except Comment.DoesNotExist:
-                pass
-        else:
-            comments = book.comment.all()
-        comments_serializer = CommentSerializer(comments, many=True)
-        user_comment_serializer = CommentSerializer(user_comment)
-        return Response({
-            'comments': comments_serializer.data,
-            'user_comment': user_comment_serializer.data if user_comment else None
-        })
-
 
 
 class GenreViewSet(ModelViewSet):
@@ -127,7 +108,7 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
 
 
-class BookCommentViewSet(ModelViewSet):
+class BookCommentViewSet(viewsets.GenericViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
@@ -143,7 +124,13 @@ class BookCommentViewSet(ModelViewSet):
             user_comment = None
         return user_comment
 
-    def list(self, request,*args, **kwargs):
+    def get_permissions(self):
+        permission_classes = []
+        if self.action == 'create':
+            permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
+    def list(self, request, *args, **kwargs):
         comments = self.get_queryset()
         comments_serializer = self.get_serializer(comments, many=True)
         response = {
@@ -155,6 +142,17 @@ class BookCommentViewSet(ModelViewSet):
                 'user_comment': user_comment_serializer.data
             })
         return Response(response)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        data.update({
+            'user': request.user.pk,
+            'book': self.kwargs['book_id'],
+        })
+        serializer = CommentSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 @api_view(['GET'])

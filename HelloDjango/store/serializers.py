@@ -1,19 +1,28 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Book, Genre, MyUser, Profile, Author, Comment, Favorite
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(source='user.username')
+    # user = serializers.StringRelatedField(source='user.username', read_only=True)
 
     class Meta:
         model = Comment
         fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Comment.objects.all(),
+                fields=['user', 'book']
+            )
+        ]
 
     def to_representation(self, instance):
         obj = super().to_representation(instance)
         obj['stars'] = '*' * obj['stars']
         return obj
+
+
 
 
 class BookDetailSerializer(serializers.ModelSerializer):

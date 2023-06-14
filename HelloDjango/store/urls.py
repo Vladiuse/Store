@@ -15,10 +15,11 @@ router.register(r'books',views.BookDetailView)
 
 comments_list = views.BookCommentViewSet.as_view({
     'get': 'list',
+    'post': 'create',
 })
 
 urlpatterns = [
-    path('', views.api_root, name='store'),
+    path('', views.store_root, name='store'),
     path('favorite/', views.favorite_books, name='favorite'),
     path('books/<int:book_id>/comments/',comments_list, name='book-comment-list'),
     path('', include(router.urls)),
