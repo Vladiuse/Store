@@ -128,29 +128,33 @@ class CommentViewSet(ModelViewSet):
 
 
 class BookCommentViewSet(ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-    def get_book(self):
-        return Book.objects.get(pk=self.kwargs['book_id'])
+    def get_queryset(self):
+        qs = Comment.objects.filter(book_id=self.kwargs['book_id']).select_related('user').select_related('book')
+        if self.request.user.is_authenticated:
+            qs = qs.exclude(user=self.request.user)
+        return qs
+
+    def get_user_comment(self):
+        try:
+            user_comment = Comment.objects.get(book_id=self.kwargs['book_id'], user=self.request.user)
+        except Comment.DoesNotExist:
+            user_comment = None
+        return user_comment
 
     def list(self, request,*args, **kwargs):
-        book = self.get_book()
-        if request.user.is_authenticated:
-            comments = book.comment.exclude(user=request.user)
-            try:
-                user_comment = Comment.objects.get(book=book, user=request.user)
-            except Comment.DoesNotExist:
-                user_comment = None
-        else:
-            comments = book.comment.all()
-        comments_serializer = CommentSerializer(comments, many=True)
-        user_comment_serializer = CommentSerializer(user_comment)
-        return Response({
+        comments = self.get_queryset()
+        comments_serializer = self.get_serializer(comments, many=True)
+        response = {
             'comments': comments_serializer.data,
-            'user_comment': user_comment_serializer.data
-        })
-
+        }
+        if self.request.user.is_authenticated:
+            user_comment_serializer = self.get_serializer(self.get_user_comment())
+            response.update({
+                'user_comment': user_comment_serializer.data
+            })
+        return Response(response)
 
 
 @api_view(['GET'])
