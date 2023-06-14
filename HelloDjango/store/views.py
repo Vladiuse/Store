@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from rest_framework.viewsets import ModelViewSet
 from django.contrib.auth import get_user_model
@@ -108,7 +108,9 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
 
 
-class BookCommentViewSet(viewsets.GenericViewSet):
+class BookCommentViewSet(mixins.UpdateModelMixin,
+                         mixins.DestroyModelMixin,
+                         viewsets.GenericViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
@@ -123,6 +125,9 @@ class BookCommentViewSet(viewsets.GenericViewSet):
         except Comment.DoesNotExist:
             user_comment = None
         return user_comment
+
+    def get_object(self, raise_404=True):
+        return get_object_or_404(Comment, user=self.request.user, book=self.kwargs['book_id'])
 
     def get_permissions(self):
         permission_classes = []
@@ -150,6 +155,19 @@ class BookCommentViewSet(viewsets.GenericViewSet):
             'book': self.kwargs['book_id'],
         })
         serializer = CommentSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        comment = get_object_or_404(Comment, user=request.user, book=self.kwargs['book_id'])
+        partial = kwargs.pop('partial', False)
+        data = request.data
+        data.update({
+            'user': request.user.pk,
+            'book': self.kwargs['book_id'],
+        })
+        serializer = CommentSerializer(comment, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

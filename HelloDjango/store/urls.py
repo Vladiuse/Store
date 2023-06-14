@@ -16,6 +16,9 @@ router.register(r'books',views.BookDetailView)
 comments_list = views.BookCommentViewSet.as_view({
     'get': 'list',
     'post': 'create',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy',
 })
 
 urlpatterns = [
