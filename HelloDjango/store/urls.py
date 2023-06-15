@@ -20,6 +20,8 @@ comments_list = views.BookCommentViewSet.as_view({
     'post': 'create',
     'put': 'update',
     'patch': 'partial_update',
+})
+comments_detail = views.BookCommentViewSet.as_view({
     'delete': 'destroy',
 })
 
@@ -27,5 +29,6 @@ urlpatterns = [
     path('', views.store_root, name='store'),
     path('favorite/', views.favorite_books, name='favorite'),
     path('books/<int:book_id>/comments/',comments_list, name='book-comment-list'),
+    path('books/<int:book_id>/comments/<int:pk>/', comments_detail, name='book-comment-detail'),
     path('', include(router.urls)),
 ]

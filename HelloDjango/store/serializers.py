@@ -13,7 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
         validators = [
             UniqueTogetherValidator(
                 queryset=Comment.objects.all(),
-                fields=['user', 'book']
+                fields=['owner', 'book']
             )
         ]
 

@@ -8,11 +8,12 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework import permissions
 from rest_framework.exceptions import MethodNotAllowed
+from rest_framework import status
 
 from .models import Book, Genre, MyUser, Author, Comment, Favorite, Profile, Test
 from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
     CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer
-from .permisions import OwnerPermissions, AdministratorDeleteOnlyPermissions
+from .permisions import IsOwnerPermissions, IsModeratorPermissions
 
 
 
@@ -108,7 +109,7 @@ class UserViewSet(ModelViewSet):
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated, OwnerPermissions,]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions,]
 
     def destroy(self, request, *args, **kwargs):
         raise MethodNotAllowed('DELETE')
@@ -131,25 +132,27 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        qs = Comment.objects.filter(book_id=self.kwargs['book_id']).select_related('user').select_related('book')
+        qs = Comment.objects.filter(book_id=self.kwargs['book_id']).select_related('owner').select_related('book')
         if self.request.user.is_authenticated:
-            qs = qs.exclude(user=self.request.user)
+            qs = qs.exclude(owner=self.request.user)
         return qs
 
     def get_user_comment(self):
         try:
-            user_comment = Comment.objects.get(book_id=self.kwargs['book_id'], user=self.request.user)
+            user_comment = Comment.objects.get(book_id=self.kwargs['book_id'], owner=self.request.user)
         except Comment.DoesNotExist:
             user_comment = None
         return user_comment
 
-    def get_object(self, raise_404=True):
-        return get_object_or_404(Comment, user=self.request.user, book=self.kwargs['book_id'])
 
     def get_permissions(self):
         permission_classes = []
         if self.action == 'create':
             permission_classes = [permissions.IsAuthenticated]
+        elif self.action in ['update', 'partial_update']:
+            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
+        if self.action == 'destroy':
+            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsModeratorPermissions]
         return [permission() for permission in permission_classes]
 
     def list(self, request, *args, **kwargs):
@@ -168,7 +171,7 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
     def create(self, request, *args, **kwargs):
         data = request.data
         data.update({
-            'user': request.user.pk,
+            'owner': request.user.pk,
             'book': self.kwargs['book_id'],
         })
         serializer = CommentSerializer(data=data)
@@ -177,17 +180,25 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, user=request.user, book=self.kwargs['book_id'])
+        comment = get_object_or_404(Comment, owner=request.user, book=self.kwargs['book_id'])
+        self.check_object_permissions(request, comment)
         partial = kwargs.pop('partial', False)
         data = request.data
         data.update({
-            'user': request.user.pk,
+            'owner': request.user.pk,
             'book': self.kwargs['book_id'],
         })
         serializer = CommentSerializer(comment, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwarg):
+        comment = get_object_or_404(Comment, pk=self.kwargs['pk'])
+        self.check_object_permissions(request, comment)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 @api_view(['GET'])
@@ -209,6 +220,6 @@ class TestViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permission_classes = []
         if self.action == 'destroy':
-            permission_classes = [permissions.IsAuthenticated,AdministratorDeleteOnlyPermissions]
+            permission_classes = [permissions.IsAuthenticated, IsModeratorPermissions]
             return [permission() for permission in permission_classes]
         return [permission() for permission in permission_classes]

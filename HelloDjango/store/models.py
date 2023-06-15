@@ -171,7 +171,7 @@ class Book(models.Model):
 
 
 class Comment(models.Model):
-    user = models.ForeignKey(
+    owner = models.ForeignKey(
         MyUser,
         on_delete=models.CASCADE,
     )
@@ -189,10 +189,10 @@ class Comment(models.Model):
     )
 
     class Meta:
-        unique_together = ['user', 'book']
+        unique_together = ['owner', 'book']
 
     def __str__(self):
-        return f'<Comment:{self.pk}> {self.user} {self.book.pk}:{self.book}'
+        return f'<Comment:{self.pk}> {self.owner} {self.book.pk}:{self.book}'
 
 
 class Genre(models.Model):
