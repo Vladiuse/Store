@@ -1,5 +1,6 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
-
+from .models import Employee
+from django.contrib.auth.models import Group
 
 class CreateEditBookPermissions(BasePermission):
 
@@ -20,3 +21,11 @@ class OwnerPermissions(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return request.user and request.user == obj.owner
+
+
+class AdministratorDeleteOnlyPermissions(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        moderator_group = Group.objects.get(name='moderator')
+        return request.user.groups.contains(moderator_group)
+

@@ -8,6 +8,7 @@ router.register(r'users', views.UserViewSet)
 router.register(r'authors', views.AuthorViewSet)
 router.register(r'comments', views.CommentViewSet)
 router.register(r'profiles', views.ProfileViewSet)
+router.register(r'tests', views.TestViewSet)
 
 # router.register(r'books/<int:pk>/comments/', views.CommentViewSet, basename='book-comments')
 

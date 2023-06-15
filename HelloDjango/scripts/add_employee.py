@@ -1,31 +1,41 @@
 from store.models import Position, MyUser, Employee
+from django.contrib.auth.models import Group
 
 moderator = Position.objects.get(pk='moderator')
 seller = Position.objects.get(pk='seller')
 manager = Position.objects.get(pk='manager')
+
+moderator_group = Group.objects.get(name='moderator')
+seller_group = Group.objects.get(name='seller')
+manager_group = Group.objects.get(name='manager')
 
 
 EMPLOYEE_DATA = [
     {
         'username': 'moderator',
         'position': moderator,
+        'group':moderator_group,
     },
     {
         'username': 'manager',
         'position': manager,
+        'group': manager_group,
     },
     {
         'username': 'seller_1',
         'position': seller,
+        'group': seller_group,
     },
     {
         'username': 'seller_2',
         'position': seller,
+        'group': seller_group,
     },
 
     {
         'username': 'seller_3',
         'position': seller,
+        'group': seller_group,
     },
 ]
 
@@ -45,6 +55,7 @@ def create_employee():
             user=user,
             position=item['position']
         )
+        user.groups.add(item['group'])
     print('Employee created', Employee.objects.count())
 
 

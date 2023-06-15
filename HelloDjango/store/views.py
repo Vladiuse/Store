@@ -9,10 +9,10 @@ from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework import permissions
 from rest_framework.exceptions import MethodNotAllowed
 
-from .models import Book, Genre, MyUser, Author, Comment, Favorite, Profile
+from .models import Book, Genre, MyUser, Author, Comment, Favorite, Profile, Test
 from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer, ProfileSerializer
-from .permisions import OwnerPermissions
+    CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer
+from .permisions import OwnerPermissions, AdministratorDeleteOnlyPermissions
 
 
 
@@ -26,6 +26,7 @@ def store_root(request, format=None):
         'genres': reverse('genre-list', request=request, format=format),
         'authors': reverse('author-list', request=request, format=format),
         'comments': reverse('comment-list', request=request, format=format),
+        '__TEST__': reverse('test-list', request=request, format=format),
     }
 
     if request.user.is_authenticated:
@@ -199,3 +200,15 @@ def favorite_books(request, format=None):
 
 def test(request, pk):
     return Response({})
+
+
+class TestViewSet(viewsets.ModelViewSet):
+    queryset = Test.objects.all()
+    serializer_class = TestSerializer
+
+    def get_permissions(self):
+        permission_classes = []
+        if self.action == 'destroy':
+            permission_classes = [permissions.IsAuthenticated,AdministratorDeleteOnlyPermissions]
+            return [permission() for permission in permission_classes]
+        return [permission() for permission in permission_classes]
