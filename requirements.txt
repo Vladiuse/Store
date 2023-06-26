@@ -8,6 +8,7 @@ coreschema==0.0.4
 decorator==5.1.1
 Django==4.2.1
 django-cors-headers==4.0.0
+django-debug-toolbar==4.1.0
 django-extensions==3.2.3
 djangorestframework==3.14.0
 drf-yasg==1.21.5
