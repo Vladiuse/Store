@@ -1,4 +1,5 @@
-from store.models import Comment, Book, MyUser
+from store.models import Comment, Book
+from user_api.models import MyUser, Profile
 from faker import Faker
 import random as r
 

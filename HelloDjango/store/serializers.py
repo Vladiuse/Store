@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Book, Genre, MyUser, Profile, Author, Comment, Favorite, Test
+from .models import Book, Genre, Author, Comment, Favorite, Test
 from rest_framework.validators import UniqueTogetherValidator
-
+from user_api.models import MyUser, Profile
 
 class CommentSerializer(serializers.ModelSerializer):
     # user = serializers.StringRelatedField(source='user.username', read_only=True)

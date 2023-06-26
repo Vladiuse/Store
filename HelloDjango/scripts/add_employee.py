@@ -1,6 +1,6 @@
-from store.models import Position, MyUser, Employee
+from store.models import Position, Employee
 from django.contrib.auth.models import Group
-
+from user_api.models import MyUser, Profile
 moderator = Position.objects.get(pk='moderator')
 seller = Position.objects.get(pk='seller')
 manager = Position.objects.get(pk='manager')

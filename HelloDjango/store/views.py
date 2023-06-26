@@ -10,11 +10,11 @@ from rest_framework import permissions
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework import status
 
-from .models import Book, Genre, MyUser, Author, Comment, Favorite, Profile, Test
+from .models import Book, Genre, Author, Comment, Favorite, Test
 from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
     CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer
 from .permisions import IsOwnerPermissions, IsModeratorPermissions
-
+from user_api.models import MyUser, Profile
 
 
 

@@ -45,8 +45,12 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     'django_extensions',
+    "rest_framework.authtoken",
+
+    'user_api.apps.UserApiConfig',
     'buttons.apps.ButtonsConfig',
     'store.apps.StoreConfig',
+    'poligon.apps.PoligonConfig',
 ]
 
 INTERNAL_IPS = [
@@ -132,7 +136,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-AUTH_USER_MODEL = 'store.MyUser'
+AUTH_USER_MODEL = 'user_api.MyUser'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 

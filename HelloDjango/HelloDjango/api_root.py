@@ -9,6 +9,8 @@ def index(request, format=None):
     'apps':{
         'buttons_app': reverse('buttons_root', request=request, format=format),
         'store_app': reverse('store', request=request, format=format),
+        'poligon_app': reverse('poligon', request=request, format=format),
+        'user_api': reverse('auth_root', request=request, format=format),
     },
     'docs':{
         'swagger': reverse('schema-swagger-ui', request=request, format=format),

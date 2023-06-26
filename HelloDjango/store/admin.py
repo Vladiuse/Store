@@ -1,8 +1,7 @@
 from django.contrib import admin
-from .models import Book, Genre, Profile, Author, Favorite, Comment, Position, Employee,\
+from .models import Book, Genre, Author, Favorite, Comment, Position, Employee,\
     Test
-from .models import MyUser
-
+from user_api.models import MyUser, Profile
 
 admin.site.register(Book)
 admin.site.register(Genre)

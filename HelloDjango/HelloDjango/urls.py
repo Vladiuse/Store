@@ -30,6 +30,8 @@ urlpatterns = [
     path('', index),
     path('buttons_app/', include('buttons.urls')),
     path('store_app/', include('store.urls')),
+    path('poligon_app/', include('poligon.urls')),
+    path('user_api/', include('user_api.urls')),
 ]
 
 urlpatterns += doc_urls

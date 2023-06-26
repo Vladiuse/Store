@@ -1,4 +1,4 @@
-from store.models import Profile
+from user_api.models import MyUser, Profile
 from faker import Faker
 import random as r
 
