@@ -68,3 +68,11 @@ class SubButton(AbstractButton):
         related_name='sub_button',
     )
 
+
+class X(models.Model):
+    name = models.CharField(max_length=30)
+    x = models.CharField(max_length=30)
+    y = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name

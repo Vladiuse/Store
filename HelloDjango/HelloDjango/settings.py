@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     "rest_framework.authtoken",
+    'django_filters',
 
     'user_api.apps.UserApiConfig',
     'buttons.apps.ButtonsConfig',
@@ -58,6 +59,13 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 5
+}
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

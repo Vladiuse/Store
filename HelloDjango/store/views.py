@@ -15,6 +15,7 @@ from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, 
     CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer
 from .permisions import IsOwnerPermissions, IsModeratorPermissions
 from user_api.models import MyUser, Profile
+from django.conf import settings
 
 
 

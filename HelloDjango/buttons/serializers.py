@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Button, Language, SubButton
+from .models import Button, Language, SubButton, X
 
 
 
@@ -27,4 +27,9 @@ class ButtonSerializer(serializers.ModelSerializer):
 class SubButtonSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubButton
+        fields = '__all__'
+
+class XSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = X
         fields = '__all__'
