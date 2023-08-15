@@ -95,6 +95,13 @@ class BookDetailView(
             'msg': 'book remove from favorites'
         })
 
+    @action(methods=['GET'], detail=True)
+    def similar_books(self, request, pk):
+        book = self.get_object()
+        qs = book.similar_books()
+        serializer = BookListSerializer(qs, many=True, context={'request': request})
+        return Response(serializer.data)
+
 
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()

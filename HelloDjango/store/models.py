@@ -1,3 +1,4 @@
+import random as r
 from django.db import models
 import os
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -100,6 +101,11 @@ class Book(models.Model):
         return self.comment.count()
 
     # def add_to_favorite(self, user):
+
+    def similar_books(self):
+        SIMILAR_BOOKS_COUNT = 3
+        genre = r.choice(self.genre.all())
+        return Book.objects.select_related('author').prefetch_related('genre').filter(genre=genre).order_by('?')[:SIMILAR_BOOKS_COUNT]
 
 
 

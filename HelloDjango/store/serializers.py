@@ -51,7 +51,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
     )
     is_favorite = serializers.BooleanField(source='favorite', read_only=True)
     add_favorite = serializers.HyperlinkedIdentityField(view_name='book-favorite')
-
+    similar_books = serializers.HyperlinkedIdentityField(view_name='book-similar-books')
     class Meta:
         model = Book
         fields = '__all__'
