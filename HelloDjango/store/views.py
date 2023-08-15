@@ -13,7 +13,7 @@ from rest_framework import status
 from .models import Book, Genre, Author, Comment, Favorite, Test, Like
 from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
     CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer, LikeSerializer
-from .permisions import IsOwnerPermissions, IsModeratorPermissions
+from .permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from user_api.models import MyUser, Profile
 from django.conf import settings
 
@@ -110,7 +110,7 @@ class UserViewSet(ModelViewSet):
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions,]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions, ]
 
     def destroy(self, request, *args, **kwargs):
         raise MethodNotAllowed('DELETE')
@@ -141,6 +141,15 @@ class CommentViewSet(ModelViewSet):
         serializer = self.get_serializer(comment)
         return Response(serializer.data)
 
+class LikeViewSet(ModelViewSet):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    def get_permissions(self):
+        permission_classes = []
+        if self.action == 'destroy':
+            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissionsSafe]
+        return [permission() for permission in permission_classes]
 
 
 class BookCommentViewSet(mixins.UpdateModelMixin,
@@ -173,6 +182,7 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         comments = self.get_queryset()
+        print(comments)
         comments_serializer = self.get_serializer(comments, many=True)
         response = {
             'comments': comments_serializer.data,

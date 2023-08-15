@@ -135,20 +135,20 @@ class Comment(models.Model):
 
     def user_like(self, user):
         for like in self.like_set.all():
-            if like.user == user:
+            if like.owner == user:
                 return like
         return None
 
 
     def set_like(self, user):
-        like, created = Like.get_or_create(user=user, comment=self, flag=True)
+        like, created = Like.get_or_create(owner=user, comment=self, flag=True)
         like.flag = True
         if not created:
             like.save()
         return like
 
     def set_dislike(self, user):
-        like, created = Like.get_or_create(user=user, comment=self, flag=False)
+        like, created = Like.get_or_create(owner=user, comment=self, flag=False)
         like.flag = False
         if not created:
             like.save()
@@ -191,20 +191,20 @@ class Test(models.Model):
 
 
 class Like(models.Model):
-    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    owner = models.ForeignKey(MyUser, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     flag = models.BooleanField()
 
     class Meta:
-        unique_together = ['user', 'comment']
+        unique_together = ['owner', 'comment']
 
     @staticmethod
-    def get_or_create(user, comment, flag):
+    def get_or_create(owner, comment, flag):
         created = False
         try:
-            like = Like.objects.get(user=user, comment=comment)
+            like = Like.objects.get(owner=owner, comment=comment)
         except Like.DoesNotExist:
-            like = Like.objects.create(user=user, comment=comment, flag=flag)
+            like = Like.objects.create(owner=owner, comment=comment, flag=flag)
             created = True
         return like, created
 

@@ -9,6 +9,7 @@ router.register(r'authors', views.AuthorViewSet)
 router.register(r'comments', views.CommentViewSet, basename='comments')
 router.register(r'profiles', views.ProfileViewSet)
 router.register(r'tests', views.TestViewSet)
+router.register(r'likes', views.LikeViewSet)
 
 
 router.register(r'books',views.BookListView)

@@ -19,7 +19,7 @@ class CommentSerializer(serializers.ModelSerializer):
     dislike_count = serializers.IntegerField(read_only=True)
     like = serializers.HyperlinkedIdentityField(view_name='comments-like')
     dislike = serializers.HyperlinkedIdentityField(view_name='comments-dislike')
-    user_like = serializers.SerializerMethodField('get_user')
+    user_like = serializers.SerializerMethodField('get_user', read_only=True)
 
     def get_user(self, obj):
         user = self.context.get('request').user

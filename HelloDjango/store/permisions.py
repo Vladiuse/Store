@@ -25,6 +25,14 @@ class IsOwnerPermissions(BasePermission):
         return request.user and request.user == obj.owner
 
 
+class IsOwnerPermissionsSafe(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user and request.user == obj.owner
+
+
 class _IsGroupPermissions(BasePermission):
     GROUP_NAME = ''
 
