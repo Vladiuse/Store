@@ -10,9 +10,9 @@ from rest_framework import permissions
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework import status
 
-from .models import Book, Genre, Author, Comment, Favorite, Test
+from .models import Book, Genre, Author, Comment, Favorite, Test, Like
 from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer
+    CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer, LikeSerializer
 from .permisions import IsOwnerPermissions, IsModeratorPermissions
 from user_api.models import MyUser, Profile
 from django.conf import settings
@@ -27,7 +27,7 @@ def store_root(request, format=None):
         'books': reverse('book-list', request=request, format=format),
         'genres': reverse('genre-list', request=request, format=format),
         'authors': reverse('author-list', request=request, format=format),
-        'comments': reverse('comment-list', request=request, format=format),
+        'comments': reverse('comments-list', request=request, format=format),
         '__TEST__': reverse('test-list', request=request, format=format),
     }
 
@@ -127,6 +127,22 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
 
 
+    @action(methods=['POST', 'GET'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
+    def like(self,request, pk):
+        comment = self.get_object()
+        comment.set_like(user=request.user)
+        serializer = self.get_serializer(comment)
+        return Response(serializer.data)
+
+    @action(methods=['POST', 'GET'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
+    def dislike(self,request, pk):
+        comment = self.get_object()
+        comment.set_dislike(user=request.user)
+        serializer = self.get_serializer(comment)
+        return Response(serializer.data)
+
+
+
 class BookCommentViewSet(mixins.UpdateModelMixin,
                          mixins.DestroyModelMixin,
                          viewsets.GenericViewSet):
@@ -144,7 +160,6 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
         except Comment.DoesNotExist:
             user_comment = None
         return user_comment
-
 
     def get_permissions(self):
         permission_classes = []
@@ -171,13 +186,13 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        data.update({
-            'owner': request.user.pk,
-            'book': self.kwargs['book_id'],
-        })
-        serializer = CommentSerializer(data=data)
+        # data.update({
+        #     'owner': request.user.pk,
+        #     'book': self.kwargs['book_id'],
+        # })
+        serializer = CommentSerializer(data=data, context={'request', self.request})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(owner=request.user, book_id= self.kwargs['book_id'])
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
@@ -199,6 +214,23 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
         self.check_object_permissions(request, comment)
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # @action(methods=['POST'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
+    # def like(self,request, pk):
+    #     like, created = Like.objects.get_or_create(comment__pk=pk, user=request.user)
+    #     like.flag = True
+    #     like.save()
+    #     serializer = LikeSerializer(like)
+    #     return Response(serializer.data)
+    #
+    # @action(methods=['POST'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
+    # def dislike(self,request, pk):
+    #     like, created = Like.objects.get_or_create(comment__pk=pk, user=request.user)
+    #     like.flag = False
+    #     like.save()
+    #     serializer = LikeSerializer(like)
+    #     return Response(serializer.data)
+
 
 
 

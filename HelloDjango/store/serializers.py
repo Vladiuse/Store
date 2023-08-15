@@ -1,21 +1,46 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Book, Genre, Author, Comment, Favorite, Test
+from .models import Book, Genre, Author, Comment, Favorite, Test, Like
 from rest_framework.validators import UniqueTogetherValidator
 from user_api.models import MyUser, Profile
 
+
+class LikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+        fields = '__all__'
+
+
 class CommentSerializer(serializers.ModelSerializer):
     # user = serializers.StringRelatedField(source='user.username', read_only=True)
+    url = serializers.HyperlinkedIdentityField(view_name='comments-detail')
+    like_count = serializers.IntegerField(read_only=True)
+    dislike_count = serializers.IntegerField(read_only=True)
+    like = serializers.HyperlinkedIdentityField(view_name='comments-like')
+    dislike = serializers.HyperlinkedIdentityField(view_name='comments-dislike')
+    user_like = serializers.SerializerMethodField('get_user')
+
+    def get_user(self, obj):
+        user = self.context.get('request').user
+        user_like = obj.user_like(user)
+        if user_like:
+            return LikeSerializer(obj.user_like(user)).data
+        return None
 
     class Meta:
         model = Comment
         fields = '__all__'
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Comment.objects.all(),
-                fields=['owner', 'book']
-            )
-        ]
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset=Comment.objects.all(),
+        #         fields=['owner', 'book']
+        #     )
+        # ]
+        extra_kwargs = {
+            'owner': {'read_only': True},
+            'book': {'read_only': True},
+        }
 
     def to_representation(self, instance):
         obj = super().to_representation(instance)
@@ -84,4 +109,5 @@ class TestSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Test
         fields = '__all__'
+
 

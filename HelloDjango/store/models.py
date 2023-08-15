@@ -192,7 +192,41 @@ class Comment(models.Model):
         unique_together = ['owner', 'book']
 
     def __str__(self):
-        return f'<Comment:{self.pk}> {self.owner} {self.book.pk}:{self.book}'
+        return f'<Comment:{self.pk}> {self.text}'
+
+    def dislike_count(self):
+        return self.like_set.filter(flag=False).count()
+
+    def like_count(self):
+        return self.like_set.filter(flag=True).count()
+
+    def user_like(self, user):
+        for like in self.like_set.all():
+            if like.user == user:
+                return like
+        return None
+
+
+    def set_like(self, user):
+        like, created = Like.get_or_create(user=user, comment=self, flag=True)
+        like.flag = True
+        if not created:
+            like.save()
+        return like
+
+    def set_dislike(self, user):
+        like, created = Like.get_or_create(user=user, comment=self, flag=False)
+        like.flag = False
+        if not created:
+            like.save()
+        return like
+
+    # def user_like(self, user):
+    #     try:
+    #         like = Like.objects.get(user=user, comment=self)
+    #         return like
+    #     except Like.DoesNotExist:
+    #         return None
 
 
 class Genre(models.Model):
@@ -228,3 +262,24 @@ class Favorite(models.Model):
 
 class Test(models.Model):
     name = models.CharField(max_length=20)
+
+
+class Like(models.Model):
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    flag = models.BooleanField()
+
+    class Meta:
+        unique_together = ['user', 'comment']
+
+    @staticmethod
+    def get_or_create(user, comment, flag):
+        created = False
+        try:
+            like = Like.objects.get(user=user, comment=comment)
+        except Like.DoesNotExist:
+            like = Like.objects.create(user=user, comment=comment, flag=flag)
+            created = True
+        return like, created
+
+
