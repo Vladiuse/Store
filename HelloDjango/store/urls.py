@@ -10,7 +10,6 @@ router.register(r'comments', views.CommentViewSet, basename='comments')
 router.register(r'profiles', views.ProfileViewSet)
 router.register(r'tests', views.TestViewSet)
 
-# router.register(r'books/<int:pk>/comments/', views.CommentViewSet, basename='book-comments')
 
 router.register(r'books',views.BookListView)
 router.register(r'books',views.BookDetailView)

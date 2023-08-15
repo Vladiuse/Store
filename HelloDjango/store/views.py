@@ -186,10 +186,6 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        # data.update({
-        #     'owner': request.user.pk,
-        #     'book': self.kwargs['book_id'],
-        # })
         serializer = CommentSerializer(data=data, context={'request', self.request})
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=request.user, book_id= self.kwargs['book_id'])
@@ -214,24 +210,6 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
         self.check_object_permissions(request, comment)
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # @action(methods=['POST'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
-    # def like(self,request, pk):
-    #     like, created = Like.objects.get_or_create(comment__pk=pk, user=request.user)
-    #     like.flag = True
-    #     like.save()
-    #     serializer = LikeSerializer(like)
-    #     return Response(serializer.data)
-    #
-    # @action(methods=['POST'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
-    # def dislike(self,request, pk):
-    #     like, created = Like.objects.get_or_create(comment__pk=pk, user=request.user)
-    #     like.flag = False
-    #     like.save()
-    #     serializer = LikeSerializer(like)
-    #     return Response(serializer.data)
-
-
 
 
 @api_view(['GET'])

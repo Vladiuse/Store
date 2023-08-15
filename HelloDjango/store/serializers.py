@@ -31,12 +31,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=Comment.objects.all(),
-        #         fields=['owner', 'book']
-        #     )
-        # ]
         extra_kwargs = {
             'owner': {'read_only': True},
             'book': {'read_only': True},
@@ -49,13 +43,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class BookDetailSerializer(serializers.ModelSerializer):
-    # genre = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     author = serializers.StringRelatedField()
     comments_count = serializers.IntegerField(read_only=True)
     comments = serializers.HyperlinkedIdentityField(
         view_name='book-comment-list',
         lookup_url_kwarg='book_id',
-        # lookup_field='id'
     )
     is_favorite = serializers.BooleanField(source='favorite', read_only=True)
     add_favorite = serializers.HyperlinkedIdentityField(view_name='book-favorite')
@@ -63,12 +55,10 @@ class BookDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
-        # fields = ['id', 'name', 'price', 'image', 'genre', 'author', 'available_in_store', 'is']
 
 
 class BookListSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='book-detail')
-    # genre = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     class Meta:
         model = Book
         exclude = ['description']
