@@ -22,6 +22,11 @@ class MyUser(AbstractUser):
     objects = MyUserManager()
 
 
+class UserAddress(models.Model):
+    address = models.CharField(max_length=255)
+    profile = models.ForeignKey('Profile', on_delete=models.CASCADE)
+
+
 class Profile(models.Model):
     NO_SEX = 'no_sex'
     MAN = 'man'
@@ -55,10 +60,6 @@ class Profile(models.Model):
         blank=True,
         choices=SEX_CHOICE,
         default=NO_SEX,
-    )
-    address = models.CharField(
-        max_length=150,
-        blank=True,
     )
 
     def delete(self, **kwargs):

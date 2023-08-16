@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Book, Genre, Author, Comment, Favorite, Test, Like
 from rest_framework.validators import UniqueTogetherValidator
-from user_api.models import MyUser, Profile
+from user_api.models import MyUser, Profile, UserAddress
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -70,11 +70,19 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ProfileAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = '__all__'
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='profile-detail')
+    addresses = ProfileAddressSerializer(many=True, source='useraddress_set')
+
     class Meta:
         model = Profile
-        fields = ['owner','first_name', 'last_name', 'age', 'sex', 'url']
+        fields = ['owner','first_name', 'last_name', 'age', 'sex', 'url', 'addresses']
         extra_kwargs = {
             'owner': {'read_only': True}
         }

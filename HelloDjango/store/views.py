@@ -110,12 +110,12 @@ class GenreViewSet(ModelViewSet):
 
 
 class UserViewSet(ModelViewSet):
-    queryset = MyUser.objects.all()
+    queryset = MyUser.objects.select_related('profile').prefetch_related('profile__useraddress_set').all()
     serializer_class = UserSerializer
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.prefetch_related('useraddress_set').all()
     serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions, ]
 
