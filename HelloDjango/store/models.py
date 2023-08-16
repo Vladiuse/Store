@@ -3,6 +3,7 @@ from django.db import models
 import os
 from django.core.validators import MinValueValidator, MaxValueValidator
 from user_api.models import MyUser, Profile
+from django.db.models import Count
 
 
 class Position(models.Model):
@@ -107,9 +108,17 @@ class Book(models.Model):
         genre = r.choice(self.genre.all())
         return Book.objects.select_related('author').prefetch_related('genre').filter(genre=genre).order_by('?')[:SIMILAR_BOOKS_COUNT]
 
+    def comments_stars_stat(self):
+        book_comments = self.comment.all()
+        stat = book_comments.values('stars').annotate(count=Count('stars')).order_by('stars')
+        result = {star:0 for star in range(1,Comment.STAR_MAX_VALUE+1)}
+        for star in stat:
+            result[star['stars']] = star['count']
+        return result
 
 
 class Comment(models.Model):
+    STAR_MAX_VALUE = 5
     owner = models.ForeignKey(
         MyUser,
         on_delete=models.CASCADE,
@@ -124,7 +133,7 @@ class Comment(models.Model):
         auto_now_add=True,
     )
     stars = models.PositiveIntegerField(
-        validators=[MaxValueValidator(5),]
+        validators=[MaxValueValidator(STAR_MAX_VALUE),]
     )
 
     class Meta:

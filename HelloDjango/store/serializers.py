@@ -45,6 +45,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class BookDetailSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
     comments_count = serializers.IntegerField(read_only=True)
+    comments_stars_stat = serializers.DictField(read_only=True)
     comments = serializers.HyperlinkedIdentityField(
         view_name='book-comment-list',
         lookup_url_kwarg='book_id',
@@ -52,6 +53,8 @@ class BookDetailSerializer(serializers.ModelSerializer):
     is_favorite = serializers.BooleanField(source='favorite', read_only=True)
     add_favorite = serializers.HyperlinkedIdentityField(view_name='book-favorite')
     similar_books = serializers.HyperlinkedIdentityField(view_name='book-similar-books')
+
+
     class Meta:
         model = Book
         fields = '__all__'
