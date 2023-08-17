@@ -10,9 +10,9 @@ from rest_framework import permissions
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework import status
 
-from .models import Book, Genre, Author, Comment, Favorite, Test, Like
+from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd
 from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer, LikeSerializer
+    CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer, LikeSerializer, BannerAddSerializer
 from .permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from user_api.models import MyUser, Profile
 from django.conf import settings
@@ -29,6 +29,7 @@ def store_root(request, format=None):
         'authors': reverse('author-list', request=request, format=format),
         'comments': reverse('comments-list', request=request, format=format),
         '__TEST__': reverse('test-list', request=request, format=format),
+        'banners': reverse('banneradd-list', request=request, format=format),
     }
 
     if request.user.is_authenticated:
@@ -251,3 +252,8 @@ class TestViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAuthenticated, IsModeratorPermissions]
             return [permission() for permission in permission_classes]
         return [permission() for permission in permission_classes]
+
+
+class BannerAddViewSet(viewsets.ModelViewSet):
+    queryset = BannerAdd.objects.all()
+    serializer_class = BannerAddSerializer

@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Book, Genre, Author, Comment, Favorite, Test, Like
+from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd
 from rest_framework.validators import UniqueTogetherValidator
 from user_api.models import MyUser, Profile, UserAddress
+from ordered_model.serializers import OrderedModelSerializer
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -112,3 +113,8 @@ class TestSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
+class BannerAddSerializer( OrderedModelSerializer):
+
+    class Meta:
+        model = BannerAdd
+        fields = ['pk', 'title', 'order', 'image']
