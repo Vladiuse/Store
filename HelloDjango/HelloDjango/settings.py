@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_extensions',
     "rest_framework.authtoken",
     'django_filters',
+    'ordered_model',
 
     'user_api.apps.UserApiConfig',
     'buttons.apps.ButtonsConfig',

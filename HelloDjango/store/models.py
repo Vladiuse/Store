@@ -4,7 +4,7 @@ import os
 from django.core.validators import MinValueValidator, MaxValueValidator
 from user_api.models import MyUser, Profile
 from django.db.models import Count
-
+from ordered_model.models import OrderedModel
 
 class Position(models.Model):
     id = models.CharField(
@@ -222,5 +222,13 @@ class Like(models.Model):
             like = Like.objects.create(owner=owner, comment=comment, flag=flag)
             created = True
         return like, created
+
+
+class BannerAdd(OrderedModel):
+    title = models.CharField(max_length=20)
+    image = models.ImageField(upload_to='banners')
+    description = models.TextField(blank=True)
+    active = models.BooleanField(default=False)
+    add_link = models.URLField(blank=True)
 
 
