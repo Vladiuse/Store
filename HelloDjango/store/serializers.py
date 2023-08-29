@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd
+from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd, BookImage
 from rest_framework.validators import UniqueTogetherValidator
 from user_api.models import MyUser, Profile, UserAddress
 from ordered_model.serializers import OrderedModelSerializer
@@ -43,6 +43,13 @@ class CommentSerializer(serializers.ModelSerializer):
         return obj
 
 
+class BookImageSerializer(OrderedModelSerializer):
+
+    class Meta:
+        model = BookImage
+        fields = '__all__'
+
+
 class BookDetailSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
     comments_count = serializers.IntegerField(read_only=True)
@@ -54,7 +61,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
     is_favorite = serializers.BooleanField(source='favorite', read_only=True)
     add_favorite = serializers.HyperlinkedIdentityField(view_name='book-favorite')
     similar_books = serializers.HyperlinkedIdentityField(view_name='book-similar-books')
-
+    images = BookImageSerializer(many=True)
 
     class Meta:
         model = Book

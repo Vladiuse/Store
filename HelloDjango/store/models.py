@@ -56,6 +56,18 @@ class BookManager(models.Manager):
         return Book.objects.filter(is_public=True)
 
 
+
+class BookImage(OrderedModel):
+    img = models.ImageField(
+        upload_to='book_images',
+    )
+    book = models.ForeignKey(
+        'Book',
+        on_delete=models.CASCADE,
+        related_name='image',
+    )
+
+
 class Book(models.Model):
     name = models.CharField(
         max_length=30
@@ -67,7 +79,7 @@ class Book(models.Model):
         'Genre',
         blank=True
     )
-    image = models.ImageField(
+    img_cover = models.ImageField(
         upload_to='book_images',
         blank=True
     )
@@ -94,8 +106,8 @@ class Book(models.Model):
         return self.name
 
     def delete(self):
-        if self.image:
-            os.remove(self.image.path)
+        if self.img_cover:
+            os.remove(self.img_cover.path)
         super().delete()
 
     def comments_count(self):
