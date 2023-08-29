@@ -28,7 +28,6 @@ def store_root(request, format=None):
         'genres': reverse('genre-list', request=request, format=format),
         'authors': reverse('author-list', request=request, format=format),
         'comments': reverse('comments-list', request=request, format=format),
-        '__TEST__': reverse('test-list', request=request, format=format),
         'banners': reverse('banneradd-list', request=request, format=format),
     }
 
@@ -160,7 +159,7 @@ class LikeViewSet(ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-class BookCommentViewSet(mixins.UpdateModelMixin,
+class BookCommentViewSet(mixins.UpdateModelMixin,  # TODO убрать миксины
                          mixins.DestroyModelMixin,
                          viewsets.GenericViewSet):
     serializer_class = CommentSerializer
@@ -190,7 +189,6 @@ class BookCommentViewSet(mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         comments = self.get_queryset()
-        print(comments)
         comments_serializer = self.get_serializer(comments, many=True)
         response = {
             'comments': comments_serializer.data,
@@ -236,23 +234,6 @@ def favorite_books(request, format=None):
     books = Book.objects.prefetch_related('is_favorite').filter(is_favorite__user=request.user)
     serializer = BookDetailSerializer(books, many=True)
     return Response(serializer.data)
-
-
-def test(request, pk):
-    return Response({})
-
-
-class TestViewSet(viewsets.ModelViewSet):
-    queryset = Test.objects.all()
-    serializer_class = TestSerializer
-
-    def get_permissions(self):
-        permission_classes = []
-        if self.action == 'destroy':
-            permission_classes = [permissions.IsAuthenticated, IsModeratorPermissions]
-            return [permission() for permission in permission_classes]
-        return [permission() for permission in permission_classes]
-
 
 class BannerAddViewSet(viewsets.ModelViewSet):
     queryset = BannerAdd.objects.all()
