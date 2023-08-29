@@ -39,6 +39,7 @@ class UserLoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.check_user(request.data)
         login(request,user)
+        serializer = UserSerializer(user)
         return Response(serializer.data)
 
 

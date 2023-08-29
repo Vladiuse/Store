@@ -1,19 +1,18 @@
 from rest_framework.serializers import ModelSerializer, Serializer
-from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 
-
-UserModel = get_user_model()
+User = get_user_model()
 
 class UserRegistrationSerializer(ModelSerializer):
 
     class Meta:
-        model = UserModel
+        model = User
         fields = '__all__'
 
     def create(self, validated_data):
-        user = UserModel.objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password']
         )
@@ -27,18 +26,19 @@ class UserLoginSerializer(Serializer):
         fields = ['username', 'password']
 
     def check_user(self, validated_data):
+        username = validated_data['username']
+        password = validated_data['password']
         user = authenticate(
-            username=validated_data['username'],
-            password=validated_data['password'],
+            username=username,
+            password=password,
         )
         if user:
             return user
         else:
-            print(validated_data)
-            raise ValueError
+            raise AuthenticationFailed(detail='Incorrect username or password')
 
 class UserSerializer(ModelSerializer):
 
     class Meta:
-        model = UserModel
+        model = User
         fields = ['username', 'email']
