@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.decorators import api_view
 from .models import MyUser, Profile
-from .permisions import IsOwnerPermissions
+from .permisions import IsOwnerPermissions, IsEmployee
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework import mixins
 
@@ -76,9 +76,13 @@ class UserView(APIView):
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
 
-class UserViewSet(ModelViewSet):
+class UserViewSet(mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin,
+                  GenericViewSet
+                  ):
     queryset = MyUser.objects.select_related('profile').prefetch_related('profile__useraddress_set').all()
     serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticated, IsEmployee)
 
 
 class ProfileViewSet(mixins.RetrieveModelMixin,
