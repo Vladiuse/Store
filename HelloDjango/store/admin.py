@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Book, Genre, Author, Favorite, Comment, Position, Employee,\
+from .models import Book, Genre, Author, Favorite, Comment, \
     Test, BannerAdd
 from user_api.models import MyUser, Profile
 from ordered_model.admin import OrderedModelAdmin
@@ -10,8 +10,6 @@ admin.site.register(Profile)
 admin.site.register(Author)
 admin.site.register(Favorite)
 admin.site.register(Comment)
-admin.site.register(Position)
-admin.site.register(Employee)
 admin.site.register(Test)
 
 

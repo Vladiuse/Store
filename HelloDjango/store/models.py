@@ -6,38 +6,6 @@ from user_api.models import MyUser, Profile
 from django.db.models import Count
 from ordered_model.models import OrderedModel
 
-class Position(models.Model):
-    id = models.CharField(
-        max_length=30,
-        unique=True,
-        primary_key=True,
-    )
-    name = models.CharField(
-        max_length=30,
-        unique=True,
-    )
-
-    def __str__(self):
-        return self.name
-
-
-class Employee(models.Model):
-    user = models.OneToOneField(
-        MyUser,
-        on_delete=models.CASCADE,
-    )
-    position = models.ForeignKey(
-        Position,
-        on_delete=models.SET_NULL,
-        null=True,
-    )
-    date_joined = models.DateField(
-        auto_now_add=True,
-    )
-
-    def __str__(self):
-        return f'{self.user}:{self.position}'
-
 
 
 class Author(models.Model):
