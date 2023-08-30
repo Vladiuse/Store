@@ -58,9 +58,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         }
 
 
-class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
+class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = MyUser
-        fields = ['id', 'username', 'email', 'is_staff', 'profile', 'date_joined']
+        fields = ['id', 'username', 'email', 'is_staff', 'date_joined', 'url']
