@@ -78,7 +78,7 @@ class Profile(models.Model):
 
 
 class Position(models.Model):
-    id = models.CharField(
+    id = models.CharField(  # TODo only ascii chars
         max_length=30,
         unique=True,
         primary_key=True,
