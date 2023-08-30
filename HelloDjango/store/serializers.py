@@ -1,8 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd, BookImage
-from rest_framework.validators import UniqueTogetherValidator
-from user_api.models import MyUser, Profile, UserAddress
 from ordered_model.serializers import OrderedModelSerializer
 
 
@@ -79,32 +76,6 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = '__all__'
-
-
-class ProfileAddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserAddress
-        fields = '__all__'
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='profile-detail')
-    addresses = ProfileAddressSerializer(many=True, source='useraddress_set')
-
-    class Meta:
-        model = Profile
-        fields = ['owner','first_name', 'last_name', 'age', 'sex', 'url', 'addresses']
-        extra_kwargs = {
-            'owner': {'read_only': True}
-        }
-
-
-class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
-
-    class Meta:
-        model = MyUser
-        fields = ['id', 'username', 'email', 'is_staff', 'profile', 'date_joined']
 
 
 class AuthorSerializer(serializers.ModelSerializer):

@@ -63,7 +63,7 @@ class Profile(models.Model):
     )
 
     def delete(self, **kwargs):
-        raise ZeroDivisionError
+        raise NotImplemented
 
     def __str__(self):
         return f'{self.pk} {self.user.username}: {self.first_name}'

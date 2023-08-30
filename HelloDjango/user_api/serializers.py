@@ -2,21 +2,23 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
+from .models import MyUser, Profile, UserAddress
 
 User = get_user_model()
 
-class UserRegistrationSerializer(ModelSerializer):
 
+class UserRegistrationSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
 
-    def create(self, validated_data):
+    def create(self, validated_data):  # TODO проверка пароля - короткий нельзя
         user = User.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password']
         )
         return user
+
 
 class UserLoginSerializer(Serializer):
     username = serializers.CharField()
@@ -37,8 +39,28 @@ class UserLoginSerializer(Serializer):
         else:
             raise AuthenticationFailed(detail='Incorrect username or password')
 
-class UserSerializer(ModelSerializer):
+
+class ProfileAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = '__all__'
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='profile-detail')
+    addresses = ProfileAddressSerializer(many=True, source='useraddress_set')
 
     class Meta:
-        model = User
-        fields = ['username', 'email']
+        model = Profile
+        fields = ['owner', 'first_name', 'last_name', 'age', 'sex', 'url', 'addresses']
+        extra_kwargs = {
+            'owner': {'read_only': True}
+        }
+
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+
+    class Meta:
+        model = MyUser
+        fields = ['id', 'username', 'email', 'is_staff', 'profile', 'date_joined']

@@ -7,15 +7,12 @@ from rest_framework import generics, mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework import permissions
-from rest_framework.exceptions import MethodNotAllowed
 from rest_framework import status
 
 from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd
-from .serializers import BookDetailSerializer, GenreSerializer, UserSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer, ProfileSerializer, TestSerializer, LikeSerializer, BannerAddSerializer
-from .permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
-from user_api.models import MyUser, Profile
-from django.conf import settings
+from .serializers import BookDetailSerializer, GenreSerializer, AuthorSerializer, \
+    CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer
+from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from shell import *
 
 
@@ -107,21 +104,6 @@ class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-
-class UserViewSet(ModelViewSet):
-    queryset = MyUser.objects.select_related('profile').prefetch_related('profile__useraddress_set').all()
-    serializer_class = UserSerializer
-
-
-class ProfileViewSet(viewsets.ModelViewSet):
-    queryset = Profile.objects.prefetch_related('useraddress_set').all()
-    serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions, ]
-
-    def destroy(self, request, *args, **kwargs):
-        raise MethodNotAllowed('DELETE')
-
 
 
 class AuthorViewSet(ModelViewSet):

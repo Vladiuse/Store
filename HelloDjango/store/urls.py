@@ -4,10 +4,11 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'genres',views.GenreViewSet)
-router.register(r'users', views.UserViewSet)
+# router.register(r'users', views.UserViewSet)
+# router.register(r'profiles', views.ProfileViewSet)
 router.register(r'authors', views.AuthorViewSet)
+
 router.register(r'comments', views.CommentViewSet, basename='comments')
-router.register(r'profiles', views.ProfileViewSet)
 router.register(r'likes', views.LikeViewSet)
 router.register(r'banners', views.BannerAddViewSet)
 
