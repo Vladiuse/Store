@@ -52,7 +52,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['owner', 'first_name', 'last_name', 'age', 'sex', 'url',]
+        fields = ['owner', 'first_name', 'last_name', 'age', 'sex', 'url', ]
         extra_kwargs = {
             'owner': {'read_only': True}
         }
@@ -67,8 +67,9 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class UserAddressSerializer(ModelSerializer):
-
     class Meta:
         model = UserAddress
-        fields = '__all__'
-
+        fields = ['pk', 'owner', 'address']
+        extra_kwargs = {
+            'owner': {'read_only': True, },
+        }

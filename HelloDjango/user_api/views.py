@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import permissions
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer, ProfileSerializer, UserAddressSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer, ProfileSerializer, \
+    UserAddressSerializer
 from rest_framework.response import Response
 from rest_framework import authentication
 from django.contrib.auth import get_user_model, login, logout
@@ -91,7 +92,6 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
                      GenericViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    # permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsEmployee ]
 
     def get_permissions(self):
         if self.action in ('update', 'partial_update'):
@@ -105,3 +105,16 @@ class UserAddressViewSet(ModelViewSet):
     queryset = UserAddress.objects.all()
     serializer_class = UserAddressSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [permissions.IsAuthenticated]
+        elif self.action == 'retrieve':
+            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsEmployee]
+        elif self.action in ('update', 'partial_update', 'destroy'):
+            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
+        else:  # list
+            permission_classes = [permissions.IsAuthenticated, IsEmployee]
+        return [permission() for permission in permission_classes]

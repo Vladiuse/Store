@@ -32,7 +32,7 @@ class MyUser(AbstractUser):
 
 
 
-class UserAddress(models.Model):
+class UserAddress(models.Model):  # TODo expand: add city, street, home ...
     address = models.CharField(max_length=255)
     owner = models.ForeignKey(
         MyUser,
