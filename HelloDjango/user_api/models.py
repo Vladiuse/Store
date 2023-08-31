@@ -34,8 +34,8 @@ class MyUser(AbstractUser):
 
 class UserAddress(models.Model):
     address = models.CharField(max_length=255)
-    profile = models.ForeignKey(
-        'Profile',
+    owner = models.ForeignKey(
+        MyUser,
         on_delete=models.CASCADE,
         related_name='addresses',
     )

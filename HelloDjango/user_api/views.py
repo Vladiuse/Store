@@ -80,7 +80,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   GenericViewSet
                   ):
-    queryset = MyUser.objects.select_related('profile').prefetch_related('profile__addresses').all()
+    queryset = MyUser.objects.select_related('profile').all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated, IsEmployee)
 
@@ -89,7 +89,7 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
                      mixins.UpdateModelMixin,
                      mixins.ListModelMixin,
                      GenericViewSet):
-    queryset = Profile.objects.prefetch_related('addresses').all()
+    queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     # permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsEmployee ]
 
@@ -102,6 +102,6 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
 
 
 class UserAddressViewSet(ModelViewSet):
-    queryset = UserAddress
+    queryset = UserAddress.objects.all()
     serializer_class = UserAddressSerializer
 

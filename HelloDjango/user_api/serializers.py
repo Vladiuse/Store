@@ -49,17 +49,17 @@ class ProfileAddressSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     # TODO make owner be username not pk
     url = serializers.HyperlinkedIdentityField(view_name='profile-detail')
-    addresses = ProfileAddressSerializer(many=True, read_only=True)
 
     class Meta:
         model = Profile
-        fields = ['owner', 'first_name', 'last_name', 'age', 'sex', 'url', 'addresses']
+        fields = ['owner', 'first_name', 'last_name', 'age', 'sex', 'url',]
         extra_kwargs = {
             'owner': {'read_only': True}
         }
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    # addresses = ProfileAddressSerializer(many=True, read_only=True) TODO add maybe
 
     class Meta:
         model = MyUser
