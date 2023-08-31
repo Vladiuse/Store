@@ -34,15 +34,21 @@ class MyUser(AbstractUser):
 
 class UserAddress(models.Model):
     address = models.CharField(max_length=255)
-    profile = models.ForeignKey('Profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        'Profile',
+        on_delete=models.CASCADE,
+        related_name='addresses',
+    )
 
 
 class Profile(models.Model):
     NO_SEX = 'no_sex'
     MAN = 'man'
+
     WOMAN = 'woman'
 
     SEX_CHOICE = [
+        (WOMAN, 'Не указан'),
         (MAN, 'Мужской'),
         (WOMAN, 'Женский'),
     ]
@@ -52,11 +58,11 @@ class Profile(models.Model):
         primary_key=True,
         on_delete=models.CASCADE,
     )
-    first_name = models.CharField(
+    first_name = models.CharField(  # toDO only leters
         blank=True,
         max_length=50,
     )
-    last_name = models.CharField(
+    last_name = models.CharField( # toDO only leters
         blank=True,
         max_length=50,
     )
