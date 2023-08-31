@@ -94,7 +94,7 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
     # permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsEmployee ]
 
     def get_permissions(self):
-        if self.action == 'update':
+        if self.action in ('update', 'partial_update'):
             permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
         else:
             permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsEmployee]

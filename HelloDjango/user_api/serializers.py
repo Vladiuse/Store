@@ -48,7 +48,7 @@ class ProfileAddressSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='profile-detail')
-    addresses = ProfileAddressSerializer(many=True)
+    addresses = ProfileAddressSerializer(many=True, read_only=True)
 
     class Meta:
         model = Profile
