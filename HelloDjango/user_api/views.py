@@ -1,14 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import permissions
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer, ProfileSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer, ProfileSerializer, UserAddressSerializer
 from rest_framework.response import Response
 from rest_framework import authentication
 from django.contrib.auth import get_user_model, login, logout
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.decorators import api_view
-from .models import MyUser, Profile
+from .models import MyUser, Profile, UserAddress
 from .permisions import IsOwnerPermissions, IsEmployee
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework import mixins
@@ -99,4 +99,9 @@ class ProfileViewSet(mixins.RetrieveModelMixin,
         else:
             permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsEmployee]
         return [permission() for permission in permission_classes]
+
+
+class UserAddressViewSet(ModelViewSet):
+    queryset = UserAddress
+    serializer_class = UserAddressSerializer
 

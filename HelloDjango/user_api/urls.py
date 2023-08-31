@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'profiles', views.ProfileViewSet)
+router.register(r'users-addresses', views.UserAddressViewSet)
 
 urlpatterns = [
     path('', views.api_root, name='auth_root'),
