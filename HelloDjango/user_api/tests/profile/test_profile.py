@@ -9,7 +9,7 @@ from rest_framework import status
 
 User = get_user_model()
 
-class ProfileTestCase(APITestCase):
+class ProfileModelTest(APITestCase):
 
 
     def test_block_delete_of_profile(self):
