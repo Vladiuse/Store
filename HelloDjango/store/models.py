@@ -9,7 +9,7 @@ from ordered_model.models import OrderedModel
 
 
 class Author(models.Model):
-    name = models.CharField(
+    name = models.CharField( # TODO add name validator and expand (name, surname)
         max_length=50,
         unique=True,
     )
@@ -78,7 +78,7 @@ class Book(models.Model):
             os.remove(self.img_cover.path)
         super().delete()
 
-    def comments_count(self):
+    def comments_count(self): # TODO remove? leave on;y source in serializer?
         return self.comment.count()
 
     # def add_to_favorite(self, user):
@@ -99,6 +99,7 @@ class Book(models.Model):
 
 class Comment(models.Model):
     STAR_MAX_VALUE = 5
+    # TODO add star min val
     owner = models.ForeignKey(
         MyUser,
         on_delete=models.CASCADE,
@@ -172,7 +173,6 @@ class Favorite(models.Model):
         related_name='is_favorite',
     )
 
-
     class Meta:
         unique_together = ['user', 'book']
 
@@ -181,13 +181,21 @@ class Favorite(models.Model):
         return f'{self.user}:{self.book}'
 
 
-class Test(models.Model):
-    name = models.CharField(max_length=20)
+class Test(models.Model):  # TODO remove
+    name = models.CharField(
+        max_length=20,
+    )
 
 
 class Like(models.Model):
-    owner = models.ForeignKey(MyUser, on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        MyUser,
+        on_delete=models.CASCADE,
+    )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+    )
     flag = models.BooleanField()
 
     class Meta:
@@ -205,10 +213,20 @@ class Like(models.Model):
 
 
 class BannerAdd(OrderedModel):
-    title = models.CharField(max_length=20)
-    image = models.ImageField(upload_to='banners')
-    description = models.TextField(blank=True)
-    active = models.BooleanField(default=False)
-    add_link = models.URLField(blank=True)
+    title = models.CharField(
+        max_length=20,
+    )
+    image = models.ImageField(
+        upload_to='banners',
+    )
+    description = models.TextField(
+        blank=True,
+    )
+    active = models.BooleanField(
+        default=False,
+    )
+    add_link = models.URLField(
+        blank=True,
+    )
 
 

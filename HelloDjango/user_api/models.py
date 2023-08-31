@@ -13,7 +13,7 @@ class MyUserManager(UserManager):
         )
         return user
 
-    def create_superuser(self, *args, **kwargs):
+    def create_superuser(self, *args, **kwargs):  # TODO transaction
         user = super().create_superuser(*args, **kwargs)
         Profile.objects.create(owner=user)
         return user
@@ -29,7 +29,6 @@ class MyUser(AbstractUser):
             return True
         except Employee.DoesNotExist:
             return False
-
 
 
 class UserAddress(models.Model):  # TODo expand: add city, street, home ...
@@ -62,7 +61,7 @@ class Profile(models.Model):
         blank=True,
         max_length=50,
     )
-    last_name = models.CharField( # toDO only leters
+    last_name = models.CharField(  # toDO only leters
         blank=True,
         max_length=50,
     )
@@ -80,7 +79,6 @@ class Profile(models.Model):
 
     def delete(self, **kwargs):
         raise NotImplementedError
-
 
 
 class Position(models.Model):
@@ -114,6 +112,3 @@ class Employee(models.Model):
 
     def __str__(self):
         return f'{self.user}:{self.position}'
-
-
-

@@ -16,7 +16,6 @@ from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOw
 from shell import *
 
 
-
 @api_view()
 def store_root(request, format=None):
     urls = {
@@ -42,11 +41,10 @@ class BookListView(mixins.CreateModelMixin,
     serializer_class = BookListSerializer
 
 
-class BookDetailView(
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    GenericViewSet):
+class BookDetailView(mixins.RetrieveModelMixin,
+                     mixins.UpdateModelMixin,
+                     mixins.DestroyModelMixin,
+                     GenericViewSet):
     queryset = Book.objects.prefetch_related('genre').prefetch_related('comment')
     serializer_class = BookDetailSerializer
 
@@ -62,7 +60,8 @@ class BookDetailView(
         else:
             return self.queryset
 
-    @action(methods=['PATCH'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
+    @action(methods=['PATCH'], detail=True,
+            permission_classes=[permissions.IsAuthenticated, ])
     def favorite(self, request, pk):
         book = self.get_object()
         if book.is_favorite.filter(user=request.user).exists():
@@ -113,20 +112,22 @@ class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-
-    @action(methods=['POST', 'GET'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
-    def like(self,request, pk):
+    @action(methods=['POST', 'GET'], detail=True,
+            permission_classes=[permissions.IsAuthenticated, ])
+    def like(self, request, pk):
         comment = self.get_object()
         comment.set_like(user=request.user)
         serializer = self.get_serializer(comment)
         return Response(serializer.data)
 
-    @action(methods=['POST', 'GET'], detail=True, permission_classes=[permissions.IsAuthenticated, ])
-    def dislike(self,request, pk):
+    @action(methods=['POST', 'GET'], detail=True,
+            permission_classes=[permissions.IsAuthenticated, ])
+    def dislike(self, request, pk):
         comment = self.get_object()
         comment.set_dislike(user=request.user)
         serializer = self.get_serializer(comment)
         return Response(serializer.data)
+
 
 class LikeViewSet(ModelViewSet):
     queryset = Like.objects.all()
@@ -184,7 +185,7 @@ class BookCommentViewSet(mixins.UpdateModelMixin,  # TODO убрать микс�
         data = request.data
         serializer = CommentSerializer(data=data, context={'request', self.request})
         serializer.is_valid(raise_exception=True)
-        serializer.save(owner=request.user, book_id= self.kwargs['book_id'])
+        serializer.save(owner=request.user, book_id=self.kwargs['book_id'])
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
@@ -214,6 +215,7 @@ def favorite_books(request, format=None):
     books = Book.objects.prefetch_related('is_favorite').filter(is_favorite__user=request.user)
     serializer = BookDetailSerializer(books, many=True)
     return Response(serializer.data)
+
 
 class BannerAddViewSet(viewsets.ModelViewSet):
     queryset = BannerAdd.objects.all()
