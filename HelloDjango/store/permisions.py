@@ -1,6 +1,20 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
+class InGroupPermission(BasePermission):
+    group_name = ''
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated():
+            return request.user.groups.filter(name=self.group_name).exists()
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_authenticated():
+            return request.user.groups.filter(name=self.group_name).exists()
+
+class IsModeratorGroupPermission(InGroupPermission):
+    group_name = 'moderator'
+
 class CreateEditBookPermissions(BasePermission):
 
     def has_permission(self, request, view):
