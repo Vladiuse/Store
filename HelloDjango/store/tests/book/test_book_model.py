@@ -22,11 +22,12 @@ def create_author():
     return Author.objects.create(name=str_random())
 
 
-def create_book(genre=None):
+def create_book(genre=None, is_public=True):
     test_image_path = './HelloDjango/store/tests/book/book_cover.webp'
     book = Book.objects.create(
         name=str_random(),
         # genre=(create_genre(),),
+        is_public=is_public,
         price=round(r.random() * 100, 2),
         author=create_author(),
         available_in_store=r.randint(1, 5),
