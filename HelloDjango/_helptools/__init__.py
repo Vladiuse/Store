@@ -1,9 +1,25 @@
 import random as r
 import string
+from user_api.models import Profile, Employee, Position
+from django.contrib.auth import get_user_model
+from faker import Faker
 
-def str_random(*,len=10) -> str:
+f = Faker()
+User = get_user_model()
+
+
+def str_random(len=10) -> str:
     if len <= 0:
         raise ValueError('len attr must be positive')
-    return ''.join(r.choices(string.ascii_lowercase,k=len))
+    return ''.join(r.choices(string.ascii_lowercase, k=len))
 
 
+def create_user():
+    return User.objects.create_user(username=f.first_name() + str_random(3), password='0000')
+
+
+def create_employee_user():
+    user = User.objects.create_user(username=f.first_name() + str_random(3), password='0000')
+    position = Position.objects.create(id=f.first_name(), name=f.first_name())
+    employee = Employee.objects.create(position=position, user=user)
+    return employee, user
