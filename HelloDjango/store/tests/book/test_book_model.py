@@ -1,13 +1,16 @@
 from django.test import TestCase
 from os import path
 from faker import Faker
-from store.models import Book, Genre, Author
+from store.models import Book, Genre, Author, Comment
 import random as r
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import QuerySet
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 f = Faker()
-from _helpers import str_random
+from _helptools import str_random
 
 
 
@@ -90,3 +93,38 @@ class BookModelTest(TestCase):
         self.assertTrue(path.exists(img_cover_path))
         book.delete()
         self.assertFalse(path.exists(img_cover_path))
+
+    def test_book_comments_stat(self):
+        book = create_book()
+        self.assertEqual(book.comments_stars_stat(), {star:0 for star in range(1,Comment.STAR_MAX_VALUE+1)})
+
+    def test_comm_stat_only_one_comm(self):
+        book = create_book()
+        comments = []
+        for i in range(1, Comment.STAR_MAX_VALUE + 1):
+            comm = Comment(
+                owner=User.objects.create_user(username=str_random(), password='xxx'),
+                book=book,
+                stars=i,
+                text='123',
+            )
+            comments.append(comm)
+        Comment.objects.bulk_create(comments)
+        expected_stat = {star: 1 for star in range(1, Comment.STAR_MAX_VALUE + 1)}
+        self.assertEqual(book.comments_stars_stat(), expected_stat)
+
+    def test_book_comm_stat(self):
+        book = create_book()
+        comments = []
+        for i in range(1, Comment.STAR_MAX_VALUE + 1):
+            for _ in range(i):
+                comm = Comment(
+                    owner=User.objects.create_user(username=str_random(), password='xxx'),
+                    book=book,
+                    stars=i,
+                    text='123',
+                )
+                comments.append(comm)
+        Comment.objects.bulk_create(comments)
+        expected_stat =  {star:star for star in range(1,Comment.STAR_MAX_VALUE+1)}
+        self.assertEqual(book.comments_stars_stat(), expected_stat)

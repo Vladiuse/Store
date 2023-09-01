@@ -96,12 +96,7 @@ class Book(models.Model):
         return qs
 
     def comments_stars_stat(self):
-        book_comments = self.comment.all()
-        stat = book_comments.values('stars').annotate(count=Count('stars')).order_by('stars')
-        result = {star:0 for star in range(1,Comment.STAR_MAX_VALUE+1)}
-        for star in stat:
-            result[star['stars']] = star['count']
-        return result
+        return Comment.stars_stat(self.comment.all())
 
 
 class Comment(models.Model):
@@ -129,6 +124,14 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'<Comment:{self.pk}> {self.text}'
+
+    @staticmethod
+    def stars_stat(qs):
+        stat = qs.values('stars').annotate(count=Count('stars')).order_by('stars')
+        result = {star: 0 for star in range(1, Comment.STAR_MAX_VALUE + 1)}
+        for star in stat:
+            result[star['stars']] = star['count']
+        return result
 
     def dislike_count(self):
         return self.like_set.filter(flag=False).count()
