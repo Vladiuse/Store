@@ -25,7 +25,7 @@ class BookManager(models.Manager):
 
 
 
-class BookImage(OrderedModel):
+class BookImage(OrderedModel): # TODO add remove images
     img = models.ImageField(
         upload_to='book_images',
     )
@@ -86,6 +86,7 @@ class Book(models.Model):
     # def add_to_favorite(self, user):
 
     def similar_books(self):
+        """Получить QS похожих книг"""
         genres_ids = [genre.pk for genre in self.genre.all()]
         qs = Book.public.select_related('author').prefetch_related('genre').exclude(pk=self.pk).\
                  filter(genre__pk__in=genres_ids).distinct().order_by('?')[:Book.SIMILAR_BOOKS_COUNT]
@@ -96,6 +97,7 @@ class Book(models.Model):
         return qs
 
     def comments_stars_stat(self):
+        """Статистика звезд у коментариев книги"""
         return Comment.stars_stat(self.comment.all())
 
 

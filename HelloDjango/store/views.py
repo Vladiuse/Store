@@ -14,6 +14,8 @@ from .serializers import BookDetailSerializer, GenreSerializer, AuthorSerializer
     CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer
 from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from shell import *
+from .permisions import IsModeratorGroupPermission
+from user_api.permisions import IsEmployee
 
 
 @api_view()
@@ -37,20 +39,27 @@ def store_root(request, format=None):
 class BookListView(mixins.CreateModelMixin,
                    mixins.ListModelMixin,
                    GenericViewSet):
-    queryset = Book.objects.prefetch_related('genre')
+    queryset = Book.public.defer('description').prefetch_related('genre').select_related('author')
     serializer_class = BookListSerializer
+
+    def get_permissions(self):
+        if self.action in ('retrieve', 'list'):
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorGroupPermission]
+        return [permission() for permission in permission_classes]
 
 
 class BookDetailView(mixins.RetrieveModelMixin,
                      mixins.UpdateModelMixin,
                      mixins.DestroyModelMixin,
                      GenericViewSet):
-    queryset = Book.objects.prefetch_related('genre').prefetch_related('comment')
+    queryset = Book.public.prefetch_related('genre').prefetch_related('comment')
     serializer_class = BookDetailSerializer
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            qs = Book.objects. \
+            qs = Book.public. \
                 prefetch_related('is_favorite'). \
                 prefetch_related('genre'). \
                 annotate(
