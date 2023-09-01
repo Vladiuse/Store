@@ -91,7 +91,7 @@ def create_books():
             author=r.choice(authors),
             available_in_store=r.randint(1,5),
             description=ru_faker.paragraph(nb_sentences=5),
-            image=SimpleUploadedFile(
+            img_cover=SimpleUploadedFile(
                 name='x.jpg',
                 content=open(image_path, 'rb').read(),
                 content_type=f'image/jpg'),
