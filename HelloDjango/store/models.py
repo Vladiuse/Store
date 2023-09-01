@@ -37,6 +37,9 @@ class BookImage(OrderedModel):
 
 
 class Book(models.Model):
+    objects = models.Manager()
+    public = BookManager()
+    SIMILAR_BOOKS_COUNT = 3
     name = models.CharField(
         max_length=30
     )
@@ -45,7 +48,6 @@ class Book(models.Model):
     )
     genre = models.ManyToManyField(
         'Genre',
-        blank=True
     )
     img_cover = models.ImageField(
         upload_to='book_images',
@@ -84,9 +86,14 @@ class Book(models.Model):
     # def add_to_favorite(self, user):
 
     def similar_books(self):
-        SIMILAR_BOOKS_COUNT = 3
-        genre = r.choice(self.genre.all())
-        return Book.objects.select_related('author').prefetch_related('genre').filter(genre=genre).order_by('?')[:SIMILAR_BOOKS_COUNT]
+        genres_ids = [genre.pk for genre in self.genre.all()]
+        qs = Book.public.select_related('author').prefetch_related('genre').exclude(pk=self.pk).\
+                 filter(genre__pk__in=genres_ids).distinct().order_by('?')[:Book.SIMILAR_BOOKS_COUNT]
+        if len(qs) < Book.SIMILAR_BOOKS_COUNT:
+            exclude_ids = [book.pk for book in qs]
+            exclude_ids.append(self.pk)
+            qs |= Book.public.exclude(pk__in=exclude_ids)[:Book.SIMILAR_BOOKS_COUNT - len(qs)]
+        return qs
 
     def comments_stars_stat(self):
         book_comments = self.comment.all()
