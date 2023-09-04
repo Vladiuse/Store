@@ -21,24 +21,29 @@ def create_genre():
 def create_author():
     return Author.objects.create(name=str_random())
 
-
-def create_book(genre=None, is_public=True):
-    test_image_path = './HelloDjango/store/tests/book/book_cover.webp'
-    book = Book.objects.create(
-        name=str_random(),
-        # genre=(create_genre(),),
-        is_public=is_public,
-        price=round(r.random() * 100, 2),
-        author=create_author(),
-        available_in_store=r.randint(1, 5),
-        description=f.paragraph(nb_sentences=5),
-        img_cover=SimpleUploadedFile(
+def get_book_fake_data(**kwargs):
+    test_image_path = './HelloDjango/store/tests/book/book_logo.png'
+    json = kwargs.pop('json', False)
+    author = create_author()
+    fake_data = {
+        'name': str_random(),
+        'is_public': True,
+        'price': round(r.random() * 100, 2),
+        'author': author if not json else author.pk,
+        'available_in_store': r.randint(1, 5),
+        'description': f.paragraph(nb_sentences=5),
+        'img_cover': SimpleUploadedFile(
             name='x.jpg',
             content=open(test_image_path, 'rb').read(),
-            content_type=f'image/jpg'),
-    )
-    if not genre:
-        genre = create_genre()
+            content_type=f'image/jpg') if not json else open(test_image_path, 'rb')
+    }
+    fake_data.update(**kwargs)
+    return fake_data
+
+def create_book(**kwargs):
+    genre = kwargs.pop('genre', create_genre())
+    fake_data = get_book_fake_data(**kwargs)
+    book = Book.objects.create(**fake_data)
     book.genre.add(genre)
     return book
 
@@ -78,7 +83,7 @@ class BookModelTest(TestCase):
         genre_2 = create_genre()
         book = create_book(genre=genre_1)
         for _ in range(10):
-            create_book(genre_2)
+            create_book(genre=genre_2)
         similar_books = book.similar_books()
         self.assertEqual(len(similar_books), Book.SIMILAR_BOOKS_COUNT)
 

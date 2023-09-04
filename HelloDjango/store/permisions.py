@@ -5,11 +5,11 @@ class InGroupPermission(BasePermission):
     group_name = ''
 
     def has_permission(self, request, view):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             return request.user.groups.filter(name=self.group_name).exists()
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             return request.user.groups.filter(name=self.group_name).exists()
 
 class IsModeratorGroupPermission(InGroupPermission):
