@@ -129,6 +129,10 @@ class Comment(models.Model):
 
     @staticmethod
     def stars_stat(qs):
+        if not isinstance(qs, models.QuerySet ):
+            raise TypeError('expect QuerySet')
+        if qs.model is not Comment:
+            raise TypeError('Model of queryset must be Comment')
         stat = qs.values('stars').annotate(count=Count('stars')).order_by('stars')
         result = {star: 0 for star in range(1, Comment.STAR_MAX_VALUE + 1)}
         for star in stat:
