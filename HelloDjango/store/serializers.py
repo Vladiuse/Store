@@ -4,7 +4,6 @@ from ordered_model.serializers import OrderedModelSerializer
 
 
 class LikeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Like
         fields = '__all__'
@@ -41,10 +40,15 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class BookImageSerializer(OrderedModelSerializer):
-
     class Meta:
         model = BookImage
         fields = '__all__'
+
+
+class BookPrideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['price']
 
 
 class BookDetailSerializer(serializers.ModelSerializer):
@@ -58,7 +62,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
     is_favorite = serializers.BooleanField(source='favorite', read_only=True)
     add_favorite = serializers.HyperlinkedIdentityField(view_name='book-favorite')
     similar_books = serializers.HyperlinkedIdentityField(view_name='book-similar-books')
-    images = BookImageSerializer(many=True, source='image')
+    images = BookImageSerializer(many=True, source='image', read_only=True)
 
     class Meta:
         model = Book
@@ -67,6 +71,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
 class BookListSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='book-detail')
+
     class Meta:
         model = Book
         exclude = ['description']
@@ -85,14 +90,12 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class TestSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = Test
         fields = '__all__'
 
 
-class BannerAddSerializer( OrderedModelSerializer):
-
+class BannerAddSerializer(OrderedModelSerializer):
     class Meta:
         model = BannerAdd
         fields = ['pk', 'title', 'order', 'image']

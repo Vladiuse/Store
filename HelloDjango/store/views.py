@@ -43,7 +43,7 @@ class BookListView(mixins.CreateModelMixin,
     serializer_class = BookListSerializer
 
     def get_permissions(self):
-        if self.action in ('retrieve', 'list'):
+        if self.action == 'list':
             permission_classes = []
         else:
             permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorGroupPermission]
@@ -56,6 +56,14 @@ class BookDetailView(mixins.RetrieveModelMixin,
                      GenericViewSet):
     queryset = Book.public.prefetch_related('genre').prefetch_related('comment')
     serializer_class = BookDetailSerializer
+
+    def get_permissions(self):
+        if self.action == 'retrieve':
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorGroupPermission]
+        return [permission() for permission in permission_classes]
+
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
