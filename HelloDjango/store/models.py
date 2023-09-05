@@ -9,7 +9,7 @@ from ordered_model.models import OrderedModel
 
 
 class Author(models.Model):
-    name = models.CharField( # TODO add name validator and expand (name, surname)
+    name = models.CharField(# TODO add name validator and expand (name, surname)
         max_length=50,
         unique=True,
     )

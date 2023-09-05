@@ -6,10 +6,11 @@ import random as r
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import QuerySet
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from .test_book_model import create_book
 from rest_framework.reverse import reverse
 from rest_framework import status
-from .test_book_model import create_book
+from .test_book_model import create_book, get_book_fake_data, create_genre
 from _helptools import create_employee_user, create_user
 
 User = get_user_model()
@@ -137,15 +138,118 @@ class BookViewGetTest(APITestCase):
 
 class BookViewCreateTest(APITestCase):
 
-    pass
-    # TODO
+    def test_no_auth(self):
+        url = reverse('book-list')
+        res = self.client.post(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auth_user(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        url = reverse('book-list')
+        res = self.client.post(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_employee_not_moderator(self):
+        employee, emp_user = create_employee_user()
+        self.client.force_login(user=emp_user)
+        url = reverse('book-list')
+        res = self.client.post(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_moderator_user(self):
+        employee, emp_user = create_employee_user()
+        moderators_group = Group.objects.create(name='moderator')
+        emp_user.groups.add(moderators_group)
+        self.client.force_login(user=emp_user)
+        url = reverse('book-list')
+        data=get_book_fake_data(json=True)
+        genre = create_genre()
+        data['genre'] = genre.pk
+        res = self.client.post(url, data=data, format='multipart')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+
 
 
 class BookViewUpdateTest(APITestCase):
-    pass
-    # TODO
+
+    def setUp(self) -> None:
+        self.book = create_book()
+
+    def test_no_auth_user(self):
+        url = reverse('book-detail', args=[self.book.pk,])
+        res = self.client.put(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        res = self.client.patch(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auth_user(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        url = reverse('book-detail', args=[self.book.pk, ])
+        res = self.client.put(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        res = self.client.patch(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auth_employee(self):
+        employee, emp_user = create_employee_user()
+        self.client.force_login(user=emp_user)
+        url = reverse('book-detail', args=[self.book.pk, ])
+        res = self.client.put(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        res = self.client.patch(url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auth_moderator_put(self):
+        employee, moderator_user = create_employee_user(add_group='moderator')
+        self.client.force_login(moderator_user)
+        url = reverse('book-detail', args=[self.book.pk, ])
+        data=get_book_fake_data(json=True)
+        genre = create_genre()
+        data['genre'] = genre.pk
+        res = self.client.put(url, data=data, format='multipart')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_auth_moderator_patch(self):
+        employee, moderator_user = create_employee_user(add_group='moderator')
+        self.client.force_login(moderator_user)
+        url = reverse('book-detail', args=[self.book.pk, ])
+        data = {'name': '123'}
+        res = self.client.patch(url, data=data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
 
 class BookViewDeleteTest(APITestCase):
-    pass
-    # TODO
+
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.book_url = reverse('book-detail', args=[self.book.pk,])
+
+
+    def test_no_auth_user(self):
+        res = self.client.delete(self.book_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auth_user(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.delete(self.book_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auth_employee(self):
+        employee, emp_user = create_employee_user()
+        self.client.force_login(user=emp_user)
+        res = self.client.delete(self.book_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_moderator(self):
+        employee, moderator_user = create_employee_user(add_group='moderator')
+        self.client.force_login(user=moderator_user)
+        res = self.client.delete(self.book_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+
+
+
