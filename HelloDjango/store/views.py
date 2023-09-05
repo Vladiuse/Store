@@ -15,7 +15,7 @@ from .serializers import BookDetailSerializer, GenreSerializer, AuthorSerializer
 from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from shell import *
 from .permisions import IsModeratorGroupPermission
-from user_api.permisions import IsEmployee
+from user_api.permisions import IsEmployee, IsModeratorOrReadOnly
 
 
 @api_view()
@@ -117,12 +117,14 @@ class BookDetailView(mixins.RetrieveModelMixin,
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsModeratorOrReadOnly]
 
 
 class AuthorViewSet(ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+
+    permission_classes = [IsModeratorOrReadOnly]
 
 
 class CommentViewSet(ModelViewSet):
