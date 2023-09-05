@@ -10,8 +10,7 @@ from django.contrib.auth.models import Group
 from .test_book_model import create_book
 from rest_framework.reverse import reverse
 from rest_framework import status
-from .test_book_model import create_book, get_book_fake_data, create_genre
-from _helptools import create_employee_user, create_user
+from _helptools import create_employee_user, create_user, get_book_fake_data, create_genre
 
 User = get_user_model()
 
