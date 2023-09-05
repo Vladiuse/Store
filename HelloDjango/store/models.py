@@ -146,13 +146,14 @@ class Comment(models.Model):
         return self.like_set.filter(flag=True).count()
 
     def user_like(self, user):
-        for like in self.like_set.all():
-            if like.owner == user:
-                return like
-        return None
-
+        try:
+            return self.like_set.get(owner=user)
+        except Like.DoesNotExist:
+            return None
 
     def set_like(self, user):
+        if not isinstance(user, MyUser):
+            raise TypeError('user must be MyUser instance')
         like, created = Like.get_or_create(owner=user, comment=self, flag=True)
         like.flag = True
         if not created:
@@ -160,6 +161,8 @@ class Comment(models.Model):
         return like
 
     def set_dislike(self, user):
+        if not isinstance(user, MyUser):
+            raise TypeError('user must be MyUser instance')
         like, created = Like.get_or_create(owner=user, comment=self, flag=False)
         like.flag = False
         if not created:
