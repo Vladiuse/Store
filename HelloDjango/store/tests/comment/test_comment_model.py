@@ -1,6 +1,7 @@
 from django.test import TestCase
 from store.models import Comment, Book, Like
 from _helptools import create_book, create_user
+from django.db import IntegrityError
 
 
 class CommentModelStarStatTest(TestCase):
@@ -101,6 +102,17 @@ class CommentLikeTest(TestCase):
     def setUp(self) -> None:
         self.book = create_book()
         self.user = create_user()
+
+    def test_add_two_likes(self):
+        comment = Comment.objects.create(
+            book=self.book,
+            owner=self.user,
+            text='123',
+            stars=5,
+        )
+        Like.objects.create(owner=self.user,comment=comment, flag=True)
+        with self.assertRaises(IntegrityError):
+            Like.objects.create(owner=self.user, comment=comment, flag=True)
 
     def test_add_like_no_like(self):
         comment = Comment.objects.create(
@@ -223,6 +235,34 @@ class CommentUserLikeTest(TestCase):
         user = create_user()
         comment = Comment.objects.create(owner=user, book=self.book, stars=1)
         self.assertEqual(comment.user_like(user), None)
+
+
+class CommentLikeCountTest(TestCase):
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.user = create_user()
+        self.comment = Comment.objects.create(owner=self.user, book=self.book, stars=1)
+        self.users = [create_user() for _ in range(7)]
+
+        for count, user in enumerate(self.users):
+            if count < 4:
+                self.comment.set_like(user)
+            else:
+                self.comment.set_dislike(user)
+
+    def test_like_count(self):
+        res = self.comment.like_count()
+        self.assertEqual(res,4)
+        self.assertNumQueries(1)
+
+    def test_dislike_count(self):
+        res = self.comment.dislike_count()
+        self.assertEqual(res, 3)
+        self.assertNumQueries(1)
+
+
+
+
 
 
 

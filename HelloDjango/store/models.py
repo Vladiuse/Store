@@ -145,7 +145,7 @@ class Comment(models.Model):
     def like_count(self):
         return self.like_set.filter(flag=True).count()
 
-    def user_like(self, user):
+    def user_like(self, user):  # TODO запедалит на цикле
         try:
             return self.like_set.get(owner=user)
         except Like.DoesNotExist:
