@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from os import path
 from faker import Faker
-from store.models import Book, Genre, Author, Comment
+from store.models import Book, Genre, Author, Comment, Favorite
 import random as r
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import QuerySet
@@ -162,13 +162,11 @@ class BookViewCreateTest(APITestCase):
         emp_user.groups.add(moderators_group)
         self.client.force_login(user=emp_user)
         url = reverse('book-list')
-        data=get_book_fake_data(json=True)
+        data = get_book_fake_data(json=True)
         genre = create_genre()
         data['genre'] = genre.pk
         res = self.client.post(url, data=data, format='multipart')
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-
-
 
 
 class BookViewUpdateTest(APITestCase):
@@ -177,7 +175,7 @@ class BookViewUpdateTest(APITestCase):
         self.book = create_book()
 
     def test_no_auth_user(self):
-        url = reverse('book-detail', args=[self.book.pk,])
+        url = reverse('book-detail', args=[self.book.pk, ])
         res = self.client.put(url, data={}, format='json')
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         res = self.client.patch(url, data={}, format='json')
@@ -205,7 +203,7 @@ class BookViewUpdateTest(APITestCase):
         employee, moderator_user = create_employee_user(add_group='moderator')
         self.client.force_login(moderator_user)
         url = reverse('book-detail', args=[self.book.pk, ])
-        data=get_book_fake_data(json=True)
+        data = get_book_fake_data(json=True)
         genre = create_genre()
         data['genre'] = genre.pk
         res = self.client.put(url, data=data, format='multipart')
@@ -224,8 +222,7 @@ class BookViewDeleteTest(APITestCase):
 
     def setUp(self) -> None:
         self.book = create_book()
-        self.book_url = reverse('book-detail', args=[self.book.pk,])
-
+        self.book_url = reverse('book-detail', args=[self.book.pk, ])
 
     def test_no_auth_user(self):
         res = self.client.delete(self.book_url, format='json')
@@ -250,5 +247,77 @@ class BookViewDeleteTest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
 
+class BookViewFavoriteTest(APITestCase):
+
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.user = create_user()
+
+    def test_add_book_in_no_auth_favorite(self):
+        self.assertEqual(Favorite.objects.count(), 0)
+        add_favorite_url = reverse('book-favorite', args=[self.book.pk, ])
+        res = self.client.post(add_favorite_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_add_in_favorite_auth_user(self):
+        self.client.force_login(user=self.user)
+        self.assertEqual(Favorite.objects.count(), 0)
+        add_favorite_url = reverse('book-favorite', args=[self.book.pk, ])
+        res = self.client.post(add_favorite_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Favorite.objects.count(), 1)
+
+    def test_remove_favorite_no_auth(self):
+        Favorite.objects.create(owner=self.user, book=self.book)
+        self.assertEqual(Favorite.objects.count(), 1)
+        url = reverse('book-favorite', args=[self.book.pk, ])
+        res = self.client.delete(url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Favorite.objects.count(), 1)
+
+    def test_delete_fav_no_owner(self):
+        Favorite.objects.create(owner=self.user, book=self.book)
+        self.assertEqual(Favorite.objects.count(), 1)
+        url = reverse('book-favorite', args=[self.book.pk, ])
+
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.delete(url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Favorite.objects.count(), 1)
+
+    def test_delete_fav_owner(self):
+        self.client.force_login(user=self.user)
+        Favorite.objects.create(owner=self.user, book=self.book)
+        self.assertEqual(Favorite.objects.count(), 1)
+        url = reverse('book-favorite', args=[self.book.pk, ])
+        res = self.client.delete(url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Favorite.objects.count(), 0)
 
 
+class BookViewSimilarBooksTest(APITestCase):
+
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.similar_books = reverse('book-similar-books', args=[self.book.pk, ])
+        self.books = [create_book() for _ in range(Book.SIMILAR_BOOKS_COUNT * 2)]
+
+    def test_get_similar_no_auth(self):
+        res = self.client.get(self.similar_books, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), Book.SIMILAR_BOOKS_COUNT)
+
+    def test_get_similar_auth(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.get(self.similar_books, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), Book.SIMILAR_BOOKS_COUNT)
+
+    def test_get_similar_employee_auth(self):
+        employee, emp_user = create_employee_user()
+        self.client.force_login(emp_user)
+        res = self.client.get(self.similar_books, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), Book.SIMILAR_BOOKS_COUNT)
