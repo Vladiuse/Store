@@ -58,8 +58,12 @@ class BookDetailView(mixins.RetrieveModelMixin,
     serializer_class = BookDetailSerializer
 
     def get_permissions(self):
-        if self.action == 'retrieve':
+        if self.action in ('retrieve', 'similar_books',):
             permission_classes = []
+        elif self.action == 'favorite':
+            permission_classes = [permissions.IsAuthenticated,]
+        elif self.action == 'remove_from_favorite':
+            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
         else:
             permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorGroupPermission]
         return [permission() for permission in permission_classes]
@@ -77,36 +81,38 @@ class BookDetailView(mixins.RetrieveModelMixin,
         else:
             return self.queryset
 
-    @action(methods=['PATCH'], detail=True,
-            permission_classes=[permissions.IsAuthenticated, ])
+    def get_object(self):
+        return get_object_or_404(Book, pk=self.kwargs['pk'], is_public=True)
+
+    @action(methods=['POST'], detail=True,)
     def favorite(self, request, pk):
         book = self.get_object()
-        if book.is_favorite.filter(user=request.user).exists():
+        if book.is_favorite.filter(owner=request.user).exists():
             return Response({
                 'status': 'error',
                 'msg': 'Book already in favorites'
-            })
-        Favorite.objects.create(user=request.user, book=book)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        Favorite.objects.create(owner=request.user, book=book)
         return Response({
             'status': 'Success',
             'msg': 'book add to favorites'
-        })
+        }, status=status.HTTP_201_CREATED)
 
     @favorite.mapping.delete
     def remove_from_favorite(self, request, pk):
         book = self.get_object()
-        if not book.is_favorite.filter(user=request.user).exists():
+        if not book.is_favorite.filter(owner=request.user).exists():
             return Response({
                 'status': 'error',
                 'msg': 'Book not in favorites'
-            })
-        Favorite.objects.get(user=request.user, book=book).delete()
+            }, status=status.HTTP_400_BAD_REQUEST)
+        Favorite.objects.get(owner=request.user, book=book).delete()
         return Response({
             'status': 'Success',
             'msg': 'book remove from favorites'
-        })
+        }, status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['GET'], detail=True)
+    @action(methods=['GET'], detail=True,)
     def similar_books(self, request, pk):
         book = self.get_object()
         qs = book.similar_books()
@@ -148,17 +154,6 @@ class CommentViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class LikeViewSet(ModelViewSet):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
-
-    def get_permissions(self):
-        permission_classes = []
-        if self.action == 'destroy':
-            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissionsSafe]
-        return [permission() for permission in permission_classes]
-
-
 class BookCommentViewSet(mixins.UpdateModelMixin,  # TODO убрать миксины
                          mixins.DestroyModelMixin,
                          viewsets.GenericViewSet):
@@ -177,15 +172,15 @@ class BookCommentViewSet(mixins.UpdateModelMixin,  # TODO убрать микс�
             user_comment = None
         return user_comment
 
-    def get_permissions(self):
-        permission_classes = []
-        if self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated]
-        elif self.action in ['update', 'partial_update']:
-            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
-        if self.action == 'destroy':
-            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsModeratorPermissions]
-        return [permission() for permission in permission_classes]
+    # def get_permissions(self):
+    #     permission_classes = []
+    #     if self.action == 'create':
+    #         permission_classes = [permissions.IsAuthenticated]
+    #     elif self.action in ['update', 'partial_update']:
+    #         permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
+    #     if self.action == 'destroy':
+    #         permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsModeratorPermissions]
+    #     return [permission() for permission in permission_classes]
 
     def list(self, request, *args, **kwargs):
         comments = self.get_queryset()
@@ -234,6 +229,18 @@ def favorite_books(request, format=None):
     books = Book.objects.prefetch_related('is_favorite').filter(is_favorite__user=request.user)
     serializer = BookDetailSerializer(books, many=True)
     return Response(serializer.data)
+
+
+class LikeViewSet(ModelViewSet):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    def get_permissions(self):
+        permission_classes = []
+        if self.action == 'destroy':
+            permission_classes = [permissions.IsAuthenticated, IsOwnerPermissionsSafe]
+        return [permission() for permission in permission_classes]
+
 
 
 class BannerAddViewSet(viewsets.ModelViewSet):

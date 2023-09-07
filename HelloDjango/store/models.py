@@ -181,7 +181,7 @@ class Genre(models.Model):
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(
+    owner = models.ForeignKey(
         MyUser,
         on_delete=models.CASCADE,
         related_name='favorite',
@@ -193,11 +193,11 @@ class Favorite(models.Model):
     )
 
     class Meta:
-        unique_together = ['user', 'book']
+        unique_together = ['owner', 'book']
 
 
     def __str__(self):
-        return f'{self.user}:{self.book}'
+        return f'{self.owner}:{self.book}'
 
 
 class Test(models.Model):  # TODO remove
