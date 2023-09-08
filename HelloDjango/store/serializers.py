@@ -13,7 +13,7 @@ class CurrentBook:
     requires_context = True
 
     def __call__(self, serializer_field):
-        return serializer_field.context['book_id']
+        return serializer_field.context['book']
 
     def __repr__(self):
         return '%s()' % self.__class__.__name__
@@ -55,6 +55,17 @@ class CommentSerializer(serializers.ModelSerializer):
         obj = super().to_representation(instance)
         obj['stars'] = '*' * obj['stars']
         return obj
+
+class CommentDetailSerializer(serializers.ModelSerializer):
+    owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Comment
+        fields = ['pk', 'text', 'stars', 'book', 'owner']
+        extra_kwargs = {
+            'owner': {'read_only': True},
+            'book': {'read_only': True},
+        }
 
 
 class BookImageSerializer(OrderedModelSerializer):

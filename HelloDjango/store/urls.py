@@ -5,22 +5,12 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'genres',views.GenreViewSet)
 router.register(r'authors', views.AuthorViewSet)
-
-# router.register(r'comments', views.CommentView, basename='comments')
 router.register(r'likes', views.LikeViewSet)
 router.register(r'banners', views.BannerAddViewSet)
-
-
 router.register(r'books',views.BookListView)
 router.register(r'books',views.BookDetailView)
 
-# comments_list = views.BookCommentViewSet.as_view({
-#     'get': 'list',
-#     'post': 'create',
-#     'put': 'update',
-#     'patch': 'partial_update',
-# })
-comments_detail = views.CommentView.as_view({
+comments_detail = views.CommentDetailView.as_view({
         'get': 'retrieve',
         'put': 'update',
         'patch': 'partial_update',

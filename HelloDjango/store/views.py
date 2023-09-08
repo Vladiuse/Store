@@ -12,7 +12,7 @@ from rest_framework import status
 
 from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd
 from .serializers import BookDetailSerializer, GenreSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer
+    CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer, CommentDetailSerializer
 from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from shell import *
 from .permisions import IsModeratorGroupPermission
@@ -133,13 +133,16 @@ class AuthorViewSet(ModelViewSet):
     permission_classes = [IsModeratorOrReadOnly]
 
 
-class CommentView(mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   GenericViewSet):
+class CommentDetailView(mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.DestroyModelMixin,
+                        GenericViewSet):
     queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+    serializer_class = CommentDetailSerializer
     permission_classes = [IsOwnerPermissionsSafe]
+
+    def perform_update(self, serializer):
+        serializer.save(owner=self.request.user)
 
     @action(methods=['POST', 'GET'], detail=True,
             permission_classes=[permissions.IsAuthenticated, ])
@@ -177,7 +180,7 @@ class BookCommentListView(generics.ListCreateAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({"book_id": self.kwargs['book_id']})
+        context.update({"book": self.kwargs['book_id']})
         return context
 
 
