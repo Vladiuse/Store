@@ -5,6 +5,7 @@ from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework import generics, mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
+from rest_framework import generics
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework import permissions
 from rest_framework import status
@@ -61,13 +62,12 @@ class BookDetailView(mixins.RetrieveModelMixin,
         if self.action in ('retrieve', 'similar_books',):
             permission_classes = []
         elif self.action == 'favorite':
-            permission_classes = [permissions.IsAuthenticated,]
+            permission_classes = [permissions.IsAuthenticated, ]
         elif self.action == 'remove_from_favorite':
             permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
         else:
             permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorGroupPermission]
         return [permission() for permission in permission_classes]
-
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
@@ -84,7 +84,7 @@ class BookDetailView(mixins.RetrieveModelMixin,
     def get_object(self):
         return get_object_or_404(Book, pk=self.kwargs['pk'], is_public=True)
 
-    @action(methods=['POST'], detail=True,)
+    @action(methods=['POST'], detail=True, )
     def favorite(self, request, pk):
         book = self.get_object()
         if book.is_favorite.filter(owner=request.user).exists():
@@ -112,7 +112,7 @@ class BookDetailView(mixins.RetrieveModelMixin,
             'msg': 'book remove from favorites'
         }, status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['GET'], detail=True,)
+    @action(methods=['GET'], detail=True, )
     def similar_books(self, request, pk):
         book = self.get_object()
         qs = book.similar_books()
@@ -133,9 +133,13 @@ class AuthorViewSet(ModelViewSet):
     permission_classes = [IsModeratorOrReadOnly]
 
 
-class CommentViewSet(ModelViewSet):
+class CommentView( mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   GenericViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [IsOwnerPermissionsSafe]
 
     @action(methods=['POST', 'GET'], detail=True,
             permission_classes=[permissions.IsAuthenticated, ])
@@ -154,9 +158,7 @@ class CommentViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class BookCommentViewSet(mixins.UpdateModelMixin,  # TODO убрать миксины
-                         mixins.DestroyModelMixin,
-                         viewsets.GenericViewSet):
+class BookCommentListView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
@@ -172,19 +174,10 @@ class BookCommentViewSet(mixins.UpdateModelMixin,  # TODO убрать микс�
             user_comment = None
         return user_comment
 
-    # def get_permissions(self):
-    #     permission_classes = []
-    #     if self.action == 'create':
-    #         permission_classes = [permissions.IsAuthenticated]
-    #     elif self.action in ['update', 'partial_update']:
-    #         permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
-    #     if self.action == 'destroy':
-    #         permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions | IsModeratorPermissions]
-    #     return [permission() for permission in permission_classes]
 
     def list(self, request, *args, **kwargs):
         comments = self.get_queryset()
-        comments_serializer = self.get_serializer(comments, many=True)
+        comments_serializer = self.get_serializer(comments, many=True, context={'request': self.request})
         response = {
             'comments': comments_serializer.data,
         }
@@ -240,7 +233,6 @@ class LikeViewSet(ModelViewSet):
         if self.action == 'destroy':
             permission_classes = [permissions.IsAuthenticated, IsOwnerPermissionsSafe]
         return [permission() for permission in permission_classes]
-
 
 
 class BannerAddViewSet(viewsets.ModelViewSet):

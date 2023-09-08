@@ -11,18 +11,19 @@ class LikeSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     # user = serializers.StringRelatedField(source='user.username', read_only=True)
-    url = serializers.HyperlinkedIdentityField(view_name='comments-detail')
+    url = serializers.HyperlinkedIdentityField(view_name='comment-detail',)
     like_count = serializers.IntegerField(read_only=True)
     dislike_count = serializers.IntegerField(read_only=True)
-    like = serializers.HyperlinkedIdentityField(view_name='comments-like')
-    dislike = serializers.HyperlinkedIdentityField(view_name='comments-dislike')
+    like = serializers.HyperlinkedIdentityField(view_name='comment-like')
+    dislike = serializers.HyperlinkedIdentityField(view_name='comment-dislike')
     user_like = serializers.SerializerMethodField('get_user', read_only=True)
 
     def get_user(self, obj):
-        user = self.context.get('request').user
-        user_like = obj.user_like(user)
-        if user_like:
-            return LikeSerializer(obj.user_like(user)).data
+        request = self.context['request']
+        if request.user.is_authenticated:
+            user_like = obj.user_like(request.user)
+            if user_like:
+                return LikeSerializer(obj.user_like(request.user)).data
         return None
 
     class Meta:
