@@ -133,7 +133,7 @@ class AuthorViewSet(ModelViewSet):
     permission_classes = [IsModeratorOrReadOnly]
 
 
-class CommentView( mixins.RetrieveModelMixin,
+class CommentView(mixins.RetrieveModelMixin,
                    mixins.UpdateModelMixin,
                    mixins.DestroyModelMixin,
                    GenericViewSet):
@@ -160,6 +160,7 @@ class CommentView( mixins.RetrieveModelMixin,
 
 class BookCommentListView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, ]
 
     def get_queryset(self):
         qs = Comment.objects.filter(book_id=self.kwargs['book_id']).select_related('owner').select_related('book')
@@ -174,46 +175,32 @@ class BookCommentListView(generics.ListCreateAPIView):
             user_comment = None
         return user_comment
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"book_id": self.kwargs['book_id']})
+        return context
+
 
     def list(self, request, *args, **kwargs):
         comments = self.get_queryset()
-        comments_serializer = self.get_serializer(comments, many=True, context={'request': self.request})
+        comments_serializer = self.get_serializer(
+            comments,
+            many=True,
+        )
         response = {
             'comments': comments_serializer.data,
         }
         if self.request.user.is_authenticated:
-            user_comment_serializer = self.get_serializer(self.get_user_comment())
+            user_comment = self.get_user_comment()
+            user_comment_serializer = self.get_serializer(user_comment)
             response.update({
-                'user_comment': user_comment_serializer.data
+                'user_comment': user_comment_serializer.data if user_comment else None
             })
-        return Response(response)
+        return Response(response, status=status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs):
-        data = request.data
-        serializer = CommentSerializer(data=data, context={'request', self.request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save(owner=request.user, book_id=self.kwargs['book_id'])
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user, book_id=self.kwargs['book_id'])
 
-    def update(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, owner=request.user, book=self.kwargs['book_id'])
-        self.check_object_permissions(request, comment)
-        partial = kwargs.pop('partial', False)
-        data = request.data
-        data.update({
-            'owner': request.user.pk,
-            'book': self.kwargs['book_id'],
-        })
-        serializer = CommentSerializer(comment, data=data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-    def destroy(self, request, *args, **kwarg):
-        comment = get_object_or_404(Comment, pk=self.kwargs['pk'])
-        self.check_object_permissions(request, comment)
-        comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd, BookImage
 from ordered_model.serializers import OrderedModelSerializer
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -8,6 +9,14 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = '__all__'
 
+class CurrentBook:
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return serializer_field.context['book_id']
+
+    def __repr__(self):
+        return '%s()' % self.__class__.__name__
 
 class CommentSerializer(serializers.ModelSerializer):
     # user = serializers.StringRelatedField(source='user.username', read_only=True)
@@ -17,6 +26,8 @@ class CommentSerializer(serializers.ModelSerializer):
     like = serializers.HyperlinkedIdentityField(view_name='comment-like')
     dislike = serializers.HyperlinkedIdentityField(view_name='comment-dislike')
     user_like = serializers.SerializerMethodField('get_user', read_only=True)
+    owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+    book = serializers.PrimaryKeyRelatedField(read_only=True, default=CurrentBook(),)
 
     def get_user(self, obj):
         request = self.context['request']
@@ -33,6 +44,12 @@ class CommentSerializer(serializers.ModelSerializer):
             'owner': {'read_only': True},
             'book': {'read_only': True},
         }
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Comment.objects.all(),
+                fields=['owner', 'book']
+            )
+        ]
 
     def to_representation(self, instance):
         obj = super().to_representation(instance)
