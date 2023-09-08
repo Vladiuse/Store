@@ -32,7 +32,7 @@ def store_root(request, format=None):
 
     if request.user.is_authenticated:
         urls.update({
-            'favorite': reverse('favorite', request=request, format=format),
+            'favorite': reverse('favorite-books', request=request, format=format),
         })
     return Response(urls)
 
@@ -209,9 +209,9 @@ class BookCommentListView(generics.ListCreateAPIView):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated, ])
 def favorite_books(request, format=None):
-    books = Book.objects.prefetch_related('is_favorite').filter(is_favorite__user=request.user)
-    serializer = BookDetailSerializer(books, many=True)
-    return Response(serializer.data)
+    books = Book.objects.prefetch_related('is_favorite').filter(is_favorite__owner=request.user)
+    serializer = BookDetailSerializer(books, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LikeViewSet(ModelViewSet):

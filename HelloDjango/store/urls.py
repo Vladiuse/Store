@@ -19,7 +19,7 @@ comments_detail = views.CommentDetailView.as_view({
 
 urlpatterns = [
     path('', views.store_root, name='store'),
-    path('favorite/', views.favorite_books, name='favorite'),
+    path('favorite/', views.favorite_books, name='favorite-books'),
     path('books/<int:book_id>/comments/', views.BookCommentListView.as_view(), name='book-comment-list'),
     path('comments/<int:pk>/', comments_detail, name='comment-detail'),
     path('comments/<int:pk>/like/', comments_detail, name='comment-like'),
