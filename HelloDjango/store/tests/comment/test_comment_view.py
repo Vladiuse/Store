@@ -107,3 +107,110 @@ class BookCommentCreateViewTest(APITestCase):
         res = self.client.post(self.book_coms_url, data=comment_data, format='json')
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+
+class CommentViewRetrieveTest(APITestCase):
+
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.user = create_user()
+        self.comment = Comment.objects.create(
+            book=self.book, owner=self.user, stars=1, text='123'
+        )
+        self.comm_url = reverse('comment-detail',args=[self.comment.pk,])
+
+    def test_get_comment_no_auth(self):
+        res = self.client.get(self.comm_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_auth_user(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.get(self.comm_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_no_exist_comment(self):
+        url = reverse('comment-detail', args=[1001,])
+        self.client.force_login(user=self.user)
+        res = self.client.get(url,format='json')
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class CommentViewUpdateTest(APITestCase):
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.user = create_user()
+        self.comment = Comment.objects.create(
+            book=self.book, owner=self.user, stars=1, text='123'
+        )
+        self.comm_url = reverse('comment-detail',args=[self.comment.pk,])
+
+    def test_update_no_auth(self):
+        res = self.client.put(self.comm_url, data={},format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        res = self.client.patch(self.comm_url,data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_not_onw_comment(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.put(self.comm_url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        res = self.client.patch(self.comm_url, data={}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_own_comment(self):
+        self.client.force_login(user=self.user)
+        data = {
+            'text': 'xxx',
+            'stars': 1,
+        }
+        res = self.client.put(self.comm_url, data=data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        comment = Comment.objects.get(pk=self.comment.pk)
+        self.assertEqual(comment.text, 'xxx')
+        data = {
+            'text': 'yyy',
+        }
+        res = self.client.patch(self.comm_url, data=data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        comment = Comment.objects.get(pk=self.comment.pk)
+        self.assertEqual(comment.text, 'yyy')
+
+    def test_no_exist_comment(self):
+        url = reverse('comment-detail', args=[1001,])
+        self.client.force_login(user=self.user)
+        res = self.client.put(url, data={},format='json')
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        res = self.client.patch(url, data={},format='json')
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class CommentViewDeleteTest(APITestCase):
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.user = create_user()
+        self.comment = Comment.objects.create(
+            book=self.book, owner=self.user, stars=1, text='123'
+        )
+        self.comm_url = reverse('comment-detail',args=[self.comment.pk,])
+
+    def test_no_auth_user(self):
+        res = self.client.delete(self.comm_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_no_own_comment(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.delete(self.comm_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_own_comment(self):
+        self.client.force_login(user=self.user)
+        res = self.client.delete(self.comm_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_no_exist_comment(self):
+        url = reverse('comment-detail', args=[1001,])
+        self.client.force_login(user=self.user)
+        res = self.client.delete(url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
