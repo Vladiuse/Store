@@ -15,7 +15,6 @@ from .serializers import BookDetailSerializer, GenreSerializer, AuthorSerializer
     CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer, CommentDetailSerializer
 from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from shell import *
-from .permisions import IsModeratorGroupPermission
 from user_api.permisions import IsEmployee, IsModeratorOrReadOnly
 
 
@@ -47,7 +46,7 @@ class BookListView(mixins.CreateModelMixin,
         if self.action == 'list':
             permission_classes = []
         else:
-            permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorGroupPermission]
+            permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorPermissions]
         return [permission() for permission in permission_classes]
 
 
@@ -66,7 +65,7 @@ class BookDetailView(mixins.RetrieveModelMixin,
         elif self.action == 'remove_from_favorite':
             permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
         else:
-            permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorGroupPermission]
+            permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorPermissions]
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):
