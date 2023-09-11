@@ -40,7 +40,7 @@ def create_author():
 
 
 def get_book_fake_data(**kwargs):
-    test_image_path = './HelloDjango/store/tests/book/book_logo.png'
+    test_image_path = './store/tests/book/book_logo.png'
     json = kwargs.pop('json', False)
     author = create_author()
     fake_data = {
@@ -69,7 +69,7 @@ def create_book(**kwargs):
 
 def banner_fake_data(**kwargs):
     json = kwargs.pop('json', False)
-    test_image_path = 'HelloDjango/store/tests/banner_add/banner_img.png'
+    test_image_path = './store/tests/banner_add/banner_img.png'
     fake_data = {
         'title': str_random(5),
         'image': SimpleUploadedFile(

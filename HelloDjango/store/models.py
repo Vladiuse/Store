@@ -256,3 +256,5 @@ class BannerAdd(OrderedModel):
     add_link = models.URLField(
         blank=True,
     )
+
+# TODO create order class Order, Basket
