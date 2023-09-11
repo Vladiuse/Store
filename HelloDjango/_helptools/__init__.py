@@ -1,7 +1,7 @@
 import random as r
 import string
 from user_api.models import Profile, Employee, Position
-from store.models import Book, Genre, Author, Comment
+from store.models import Book, Genre, Author, Comment, BannerAdd
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -38,6 +38,7 @@ def create_genre():
 def create_author():
     return Author.objects.create(name=str_random())
 
+
 def get_book_fake_data(**kwargs):
     test_image_path = './HelloDjango/store/tests/book/book_logo.png'
     json = kwargs.pop('json', False)
@@ -57,9 +58,33 @@ def get_book_fake_data(**kwargs):
     fake_data.update(**kwargs)
     return fake_data
 
+
 def create_book(**kwargs):
     genre = kwargs.pop('genre', create_genre())
     fake_data = get_book_fake_data(**kwargs)
     book = Book.objects.create(**fake_data)
     book.genre.add(genre)
     return book
+
+
+def banner_fake_data(**kwargs):
+    json = kwargs.pop('json', False)
+    test_image_path = 'HelloDjango/store/tests/banner_add/banner_img.png'
+    fake_data = {
+        'title': str_random(5),
+        'image': SimpleUploadedFile(
+            name='x.png',
+            content=open(test_image_path, 'rb').read(),
+            content_type='image/png',
+        )  if not json else open(test_image_path, 'rb') ,
+        'description': str_random(5),
+        'is_public': True,
+        'add_link': f.url() + str_random(5),
+    }
+    fake_data.update(**kwargs)
+    return fake_data
+
+
+def create_banner():
+    add = BannerAdd.objects.create(**banner_fake_data())
+    return add
