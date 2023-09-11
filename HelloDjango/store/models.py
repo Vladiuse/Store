@@ -4,7 +4,8 @@ import os
 from django.core.validators import MinValueValidator, MaxValueValidator
 from user_api.models import MyUser, Profile
 from django.db.models import Count
-from ordered_model.models import OrderedModel
+from ordered_model.models import OrderedModel, OrderedModelManager
+
 
 
 
@@ -230,8 +231,16 @@ class Like(models.Model):
             created = True
         return like, created
 
+class BannerAddManager(OrderedModelManager):
+
+    def get_queryset(self):
+        return BannerAdd.objects.filter(is_public=True)
 
 class BannerAdd(OrderedModel):
+
+    objects = OrderedModelManager()
+    public = BannerAddManager()
+
     title = models.CharField(
         max_length=20,
     )
@@ -241,11 +250,9 @@ class BannerAdd(OrderedModel):
     description = models.TextField(
         blank=True,
     )
-    active = models.BooleanField(
+    is_public = models.BooleanField(
         default=False,
     )
     add_link = models.URLField(
         blank=True,
     )
-
-
