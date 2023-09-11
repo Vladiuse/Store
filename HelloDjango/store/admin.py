@@ -18,7 +18,7 @@ class MyUserAdmin(admin.ModelAdmin):
     list_filter = ['is_staff', 'is_superuser']
 
 class BannerAddAdmin(OrderedModelAdmin):
-    list_display = ['id', 'title','active', 'add_link','move_up_down_links']
+    list_display = ['id', 'title','is_public', 'add_link','move_up_down_links']
 
 admin.site.register(MyUser,MyUserAdmin)
 admin.site.register(BannerAdd,BannerAddAdmin)

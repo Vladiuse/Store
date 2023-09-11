@@ -6,7 +6,7 @@ router = DefaultRouter()
 router.register(r'genres',views.GenreViewSet)
 router.register(r'authors', views.AuthorViewSet)
 router.register(r'likes', views.LikeViewSet)
-router.register(r'banners', views.BannerAddViewSet)
+router.register(r'banners', views.BannerAddViewSet, basename='banners')
 router.register(r'books',views.BookListView)
 router.register(r'books',views.BookDetailView)
 
