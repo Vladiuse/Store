@@ -25,8 +25,10 @@ class _IsGroupPermissions(BasePermission):
     GROUP_NAME = ''
 
     def has_object_permission(self, request, view, obj):
-        group = Group.objects.get(name=self.GROUP_NAME)
-        return request.user.groups.contains(group)
+        return request.user.groups.filter(name=self.GROUP_NAME).exists()
+
+    def has_permission(self, request, view):
+        return request.user.groups.filter(name=self.GROUP_NAME).exists()
 
 
 class IsModeratorPermissions(_IsGroupPermissions):
