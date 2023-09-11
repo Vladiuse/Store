@@ -127,4 +127,4 @@ class TestSerializer(serializers.HyperlinkedModelSerializer):
 class BannerAddSerializer(OrderedModelSerializer):
     class Meta:
         model = BannerAdd
-        fields = ['pk', 'title', 'order', 'image']
+        fields = '__all__'

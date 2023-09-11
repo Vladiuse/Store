@@ -214,7 +214,7 @@ def favorite_books(request, format=None):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class LikeViewSet(ModelViewSet):
+class LikeViewSet(ModelViewSet):  # TODO удалить?
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
 
@@ -226,5 +226,12 @@ class LikeViewSet(ModelViewSet):
 
 
 class BannerAddViewSet(viewsets.ModelViewSet):
-    queryset = BannerAdd.objects.all()
     serializer_class = BannerAddSerializer
+    permission_classes = [IsModeratorOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated and self.request.user.groups.filter(name='moderator').exists():
+            queryset = BannerAdd.objects.all()
+        else:
+            queryset = BannerAdd.public.all()
+        return queryset
