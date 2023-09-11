@@ -137,6 +137,9 @@ class BookViewGetTest(APITestCase):
 
 class BookViewCreateTest(APITestCase):
 
+    def setUp(self) -> None:
+        Group.objects.create(name='moderator')
+
     def test_no_auth(self):
         url = reverse('book-list')
         res = self.client.post(url, data={}, format='json')
@@ -157,9 +160,7 @@ class BookViewCreateTest(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_moderator_user(self):
-        employee, emp_user = create_employee_user()
-        moderators_group = Group.objects.create(name='moderator')
-        emp_user.groups.add(moderators_group)
+        employee, emp_user = create_employee_user(add_group='moderator')
         self.client.force_login(user=emp_user)
         url = reverse('book-list')
         data = get_book_fake_data(json=True)
