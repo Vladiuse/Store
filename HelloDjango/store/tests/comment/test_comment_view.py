@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
-from store.models import Comment, Book
+from store.models import Comment, Book, Like
 from _helptools import create_user, create_employee_user, create_book
 from django.contrib.auth import get_user_model
 from rest_framework import status
@@ -214,3 +214,81 @@ class CommentViewDeleteTest(APITestCase):
         self.client.force_login(user=self.user)
         res = self.client.delete(url, format='json')
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class CommentDetailViewSetLikeTest(APITestCase):
+
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.user = create_user()
+        self.comment = Comment.objects.create(
+            owner=self.user,
+            book=self.book,
+            text='123',
+            stars=1,
+        )
+        self.like_url = reverse('comment-like', args=[self.comment.pk, ])
+        self.dislike_url = reverse('comment-dislike', args=[self.comment.pk, ])
+
+    def test_no_auth_like(self):
+        res = self.client.post(self.like_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_no_auth_dislike(self):
+        res = self.client.post(self.dislike_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_auth_user_like(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.post(self.like_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_auth_user_dislike(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.post(self.dislike_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_remove_like_no_auth(self):
+        Like.objects.create(comment=self.comment, owner=self.user, flag=True)
+        self.assertEqual(Like.objects.count(),1)
+        res = self.client.delete(self.like_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_remove_like_auth(self):
+        self.client.force_login(user=self.user)
+        Like.objects.create(comment=self.comment, owner=self.user, flag=True)
+        self.assertEqual(Like.objects.count(),1)
+        res = self.client.delete(self.like_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Like.objects.count(),0)
+
+    def test_remove_like_autt_no_like_created(self):
+        # Like.objects.create(comment=self.comment, owner=self.user, flag=True)
+        self.client.force_login(user=self.user)
+        self.assertEqual(Like.objects.count(),0)
+        res = self.client.delete(self.like_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_remove_dislike_no_auth(self):
+        Like.objects.create(comment=self.comment, owner=self.user, flag=False)
+        self.assertEqual(Like.objects.count(),1)
+        res = self.client.delete(self.dislike_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_remove_dislike_auth(self):
+        self.client.force_login(user=self.user)
+        Like.objects.create(comment=self.comment, owner=self.user, flag=False)
+        self.assertEqual(Like.objects.count(),1)
+        res = self.client.delete(self.dislike_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Like.objects.count(),0)
+
+    def test_remove_like_autt_no_dislike_created(self):
+        # Like.objects.create(comment=self.comment, owner=self.user, flag=True)
+        self.client.force_login(user=self.user)
+        self.assertEqual(Like.objects.count(),0)
+        res = self.client.delete(self.dislike_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
