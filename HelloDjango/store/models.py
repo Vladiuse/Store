@@ -1,17 +1,20 @@
 import random as r
 from django.db import models
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 import os
 from django.core.validators import MinValueValidator, MaxValueValidator
 from user_api.models import MyUser, Profile
 from django.db.models import Count
 from ordered_model.models import OrderedModel, OrderedModelManager
+from django.contrib.auth import get_user_model
+from .errors import LatsBasketItemError
 
-
+User = get_user_model()
 
 
 class Author(models.Model):
-    name = models.CharField(# TODO add name validator and expand (name, surname)
+    name = models.CharField(  # TODO add name validator and expand (name, surname)
         max_length=50,
         unique=True,
     )
@@ -26,8 +29,7 @@ class BookManager(models.Manager):
         return Book.objects.filter(is_public=True)
 
 
-
-class BookImage(OrderedModel): # TODO add remove images
+class BookImage(OrderedModel):  # TODO add remove images
     img = models.ImageField(
         upload_to='book_images',
     )
@@ -72,7 +74,7 @@ class Book(models.Model):
     )
 
     class Meta:
-        ordering = ['pk',]
+        ordering = ['pk', ]
 
     def __str__(self):
         return self.name
@@ -82,7 +84,7 @@ class Book(models.Model):
             os.remove(self.img_cover.path)
         super().delete()
 
-    def comments_count(self): # TODO remove? leave on;y source in serializer?
+    def comments_count(self):  # TODO remove? leave on;y source in serializer?
         return self.comment.count()
 
     # def add_to_favorite(self, user):
@@ -90,7 +92,7 @@ class Book(models.Model):
     def similar_books(self):
         """Получить QS похожих книг"""
         genres_ids = [genre.pk for genre in self.genre.all()]
-        qs = Book.public.select_related('author').prefetch_related('genre').exclude(pk=self.pk).\
+        qs = Book.public.select_related('author').prefetch_related('genre').exclude(pk=self.pk). \
                  filter(genre__pk__in=genres_ids).distinct().order_by('?')[:Book.SIMILAR_BOOKS_COUNT]
         if len(qs) < Book.SIMILAR_BOOKS_COUNT:
             exclude_ids = [book.pk for book in qs]
@@ -120,7 +122,7 @@ class Comment(models.Model):
         auto_now_add=True,
     )
     stars = models.PositiveIntegerField(
-        validators=[MaxValueValidator(STAR_MAX_VALUE),]
+        validators=[MaxValueValidator(STAR_MAX_VALUE), ]
     )
 
     class Meta:
@@ -131,7 +133,7 @@ class Comment(models.Model):
 
     @staticmethod
     def stars_stat(qs):
-        if not isinstance(qs, models.QuerySet ):
+        if not isinstance(qs, models.QuerySet):
             raise TypeError('expect QuerySet')
         if qs.model is not Comment:
             raise TypeError('Model of queryset must be Comment')
@@ -171,7 +173,7 @@ class Comment(models.Model):
             like.save()
         return like
 
-    def remove_like(self,user):
+    def remove_like(self, user):
         like = get_object_or_404(Like, comment=self, owner=user, flag=True)
         like.delete()
 
@@ -204,7 +206,6 @@ class Favorite(models.Model):
 
     class Meta:
         unique_together = ['owner', 'book']
-
 
     def __str__(self):
         return f'{self.owner}:{self.book}'
@@ -240,13 +241,14 @@ class Like(models.Model):
             created = True
         return like, created
 
+
 class BannerAddManager(OrderedModelManager):
 
     def get_queryset(self):
         return BannerAdd.objects.filter(is_public=True)
 
-class BannerAdd(OrderedModel):
 
+class BannerAdd(OrderedModel):
     objects = OrderedModelManager()
     public = BannerAddManager()
 
@@ -266,4 +268,59 @@ class BannerAdd(OrderedModel):
         blank=True,
     )
 
+
 # TODO create order class Order, Basket
+
+class BasketQuerySet(models.QuerySet):
+
+    def total_sum(self):
+        return sum(basket.sum() for basket in self)
+
+    def total_quantity(self):
+        return sum(basket.quantity for basket in self)
+
+
+class Basket(models.Model):
+    objects = BasketQuerySet.as_manager()
+
+    book = models.ForeignKey(
+        to=Book,
+        on_delete=models.CASCADE,
+    )
+    owner = models.ForeignKey(
+        to=User,
+        on_delete=models.CASCADE,
+    )
+    quantity = models.SmallIntegerField(
+        default=0,
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        unique_together = ['book', 'owner']
+
+    def sum(self):
+        return self.book.price * self.quantity
+
+    @staticmethod
+    def add(book, user):
+        try:
+            basket = Basket.objects.get(owner=user, book=book)
+            basket.quantity = F('quantity') + 1
+            basket.save()
+            basket.refresh_from_db()
+        except Basket.DoesNotExist:
+            basket = Basket.objects.create(book=book, owner=user, quantity=1)
+        return basket
+
+    @staticmethod
+    def remove(book, user):
+        basket = get_object_or_404(Basket, owner=user, book=book)
+        if basket.quantity == 1:
+            raise LatsBasketItemError
+        basket.quantity = F('quantity') - 1
+        basket.save()
+        basket.refresh_from_db()
+        return basket
