@@ -1,5 +1,6 @@
 import random as r
 from django.db import models
+from django.shortcuts import get_object_or_404
 import os
 from django.core.validators import MinValueValidator, MaxValueValidator
 from user_api.models import MyUser, Profile
@@ -169,6 +170,14 @@ class Comment(models.Model):
         if not created:
             like.save()
         return like
+
+    def remove_like(self,user):
+        like = get_object_or_404(Like, comment=self, owner=user, flag=True)
+        like.delete()
+
+    def remove_dislike(self, user):
+        like = get_object_or_404(Like, comment=self, owner=user, flag=False)
+        like.delete()
 
 
 class Genre(models.Model):

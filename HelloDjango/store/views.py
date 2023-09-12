@@ -143,21 +143,31 @@ class CommentDetailView(mixins.RetrieveModelMixin,
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)
 
-    @action(methods=['POST', 'GET'], detail=True,
-            permission_classes=[permissions.IsAuthenticated, ])
+    @action(detail=True,methods=['POST'],permission_classes=[permissions.IsAuthenticated])
     def like(self, request, pk):
         comment = self.get_object()
-        comment.set_like(user=request.user)
-        serializer = self.get_serializer(comment)
-        return Response(serializer.data)
+        like = comment.set_like(user=request.user)
+        serializer = LikeSerializer(like)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(methods=['POST', 'GET'], detail=True,
-            permission_classes=[permissions.IsAuthenticated, ])
+    @like.mapping.delete
+    def remove_like(self, request,pk):
+        comment = self.get_object()
+        comment.remove_like(request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True,methods=['POST'],permission_classes=[permissions.IsAuthenticated])
     def dislike(self, request, pk):
         comment = self.get_object()
-        comment.set_dislike(user=request.user)
-        serializer = self.get_serializer(comment)
-        return Response(serializer.data)
+        like = comment.set_like(user=request.user)
+        serializer = LikeSerializer(like)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @dislike.mapping.delete
+    def remove_dislike(self, request,pk):
+        comment = self.get_object()
+        comment.remove_dislike(request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class BookCommentListView(generics.ListCreateAPIView):
