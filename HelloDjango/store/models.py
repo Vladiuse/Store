@@ -274,7 +274,7 @@ class BannerAdd(OrderedModel):
 class BasketQuerySet(models.QuerySet):
 
     def total_sum(self):
-        return sum(basket.sum() for basket in self)
+        return sum(basket.sum for basket in self)
 
     def total_quantity(self):
         return sum(basket.quantity for basket in self)
@@ -292,7 +292,7 @@ class Basket(models.Model):
         on_delete=models.CASCADE,
     )
     quantity = models.SmallIntegerField(
-        default=0,
+        default=1,
     )
     created = models.DateTimeField(
         auto_now_add=True,
@@ -301,6 +301,7 @@ class Basket(models.Model):
     class Meta:
         unique_together = ['book', 'owner']
 
+    @property
     def sum(self):
         return self.book.price * self.quantity
 
@@ -312,12 +313,12 @@ class Basket(models.Model):
             basket.save()
             basket.refresh_from_db()
         except Basket.DoesNotExist:
-            basket = Basket.objects.create(book=book, owner=user, quantity=1)
+            basket = Basket.objects.create(book=book, owner=user)
         return basket
 
     @staticmethod
     def remove(book, user):
-        basket = get_object_or_404(Basket, owner=user, book=book)
+        basket = Basket.objects.get(owner=user, book=book)
         if basket.quantity == 1:
             raise LatsBasketItemError
         basket.quantity = F('quantity') - 1
