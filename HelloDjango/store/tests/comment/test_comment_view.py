@@ -1,4 +1,5 @@
 from rest_framework.test import APITestCase
+import json
 from rest_framework.reverse import reverse
 from store.models import Comment, Book, Like
 from _helptools import create_user, create_employee_user, create_book
@@ -291,4 +292,50 @@ class CommentDetailViewSetLikeTest(APITestCase):
         self.assertEqual(Like.objects.count(),0)
         res = self.client.delete(self.dislike_url, format='json')
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+class CommentUserLikeSerializerTest(APITestCase):
+
+    def setUp(self) -> None:
+        self.book = create_book()
+        self.user = create_user()
+        self.comment = Comment.objects.create(
+            owner=self.user,
+            book=self.book,
+            text='123',
+            stars=1,
+        )
+        self.comment_url = reverse('comment-detail', args=[self.comment.pk,])
+        self.book_coms_url = reverse('book-comment-list', args=[self.book.pk, ])
+
+    def test_no_auth(self):
+        res = self.client.get(self.book_coms_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = json.loads(res.content)
+        comment = data['comments'][0]
+        self.assertEqual(comment['user_like'], None)
+
+    def test_auth_no_user_like(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        res = self.client.get(self.book_coms_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = json.loads(res.content)
+        comment = data['comments'][0]
+        self.assertEqual(comment['user_like'], None)
+
+    def test_user_like_exist(self):
+        user = create_user()
+        self.client.force_login(user=user)
+        self.comment.set_like(user)
+        res = self.client.get(self.book_coms_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = json.loads(res.content)
+        comment = data['comments'][0]
+        user_like = Like.objects.get(comment=self.comment, owner=user)
+        self.assertIsNotNone(comment['user_like'])
+        self.assertEqual(comment['user_like']['id'], user_like.pk)
+
+
+
+
 
