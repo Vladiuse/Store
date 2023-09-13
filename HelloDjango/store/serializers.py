@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd, BookImage
+from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd, BookImage, Basket
 from ordered_model.serializers import OrderedModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -128,3 +128,14 @@ class BannerAddSerializer(OrderedModelSerializer):
     class Meta:
         model = BannerAdd
         fields = '__all__'
+
+class BasketSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Basket
+        fields = '__all__'
+        extra_kwargs = {
+            'created': {'read_only': True},
+            'book': {'read_only': True},
+            'owner': {'read_only': True},
+        }
