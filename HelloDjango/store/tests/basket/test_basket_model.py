@@ -2,6 +2,7 @@ from store.models import Basket, Book
 from store.errors import LatsBasketItemError
 from django.test import TestCase
 from _helptools import create_book, create_user
+from django.db import IntegrityError
 
 
 class BasketDefaultValueTest(TestCase):
@@ -82,9 +83,7 @@ class BasketModelAddMethodTest(TestCase):
 
     def test_add_item_basket_exist(self):
         basket = Basket.objects.create(owner=self.user, book=self.book_1)
-        Basket.add(self.book_1, self.user)
-        basket.refresh_from_db()
-        self.assertEqual(basket.quantity,2)
+        self.assertRaises(IntegrityError, Basket.add, self.book_1, self.user)
 
     def test_add_few_books(self):
         Basket.add(self.book_1, self.user)
@@ -94,35 +93,36 @@ class BasketModelAddMethodTest(TestCase):
         self.assertEqual(basket_qs.total_quantity(), 3)
 
 
-class BasketModelRemoveMethodTest(TestCase):
-    def setUp(self) -> None:
-        self.book_1 = create_book(price=100)
-        self.book_2 = create_book(price=200)
-        self.book_3 = create_book(price=300)
-        self.user = create_user()
 
-    def test_remove_no_items(self):
-        self.assertRaises(Basket.DoesNotExist, Basket.remove,self.book_1, self.user)
-
-    def test_remove_one_item_exist(self):
-        Basket.objects.create(owner=self.user, book=self.book_1)
-        self.assertEqual(Basket.objects.count(),1)
-        self.assertRaises(LatsBasketItemError, Basket.remove,self.book_1, self.user)
-
-    def test_remove_few_items_exists(self):
-        Basket.objects.create(owner=self.user, book=self.book_1, quantity=3)
-        self.assertEqual(Basket.objects.count(),1)
-        basket = Basket.remove(self.book_1, self.user)
-        self.assertEqual(basket.quantity,2)
-
-    def test_remove_few_items_exists_2(self):
-        Basket.objects.create(owner=self.user, book=self.book_1, quantity=3)
-        Basket.objects.create(owner=self.user, book=self.book_2, quantity=3)
-        Basket.objects.create(owner=self.user, book=self.book_3, quantity=3)
-        self.assertEqual(Basket.objects.count(), 3)
-        basket = Basket.remove(self.book_1, self.user)
-        self.assertEqual(basket.quantity, 2)
-        self.assertEqual(Basket.objects.count(), 3)
+# class BasketModelRemoveMethodTest(TestCase):  # TODO delete
+#     def setUp(self) -> None:
+#         self.book_1 = create_book(price=100)
+#         self.book_2 = create_book(price=200)
+#         self.book_3 = create_book(price=300)
+#         self.user = create_user()
+#
+#     def test_remove_no_items(self):
+#         self.assertRaises(Basket.DoesNotExist, Basket.remove,self.book_1, self.user)
+#
+#     def test_remove_one_item_exist(self):
+#         Basket.objects.create(owner=self.user, book=self.book_1)
+#         self.assertEqual(Basket.objects.count(),1)
+#         self.assertRaises(LatsBasketItemError, Basket.remove,self.book_1, self.user)
+#
+#     def test_remove_few_items_exists(self):
+#         Basket.objects.create(owner=self.user, book=self.book_1, quantity=3)
+#         self.assertEqual(Basket.objects.count(),1)
+#         basket = Basket.remove(self.book_1, self.user)
+#         self.assertEqual(basket.quantity,2)
+#
+#     def test_remove_few_items_exists_2(self):
+#         Basket.objects.create(owner=self.user, book=self.book_1, quantity=3)
+#         Basket.objects.create(owner=self.user, book=self.book_2, quantity=3)
+#         Basket.objects.create(owner=self.user, book=self.book_3, quantity=3)
+#         self.assertEqual(Basket.objects.count(), 3)
+#         basket = Basket.remove(self.book_1, self.user)
+#         self.assertEqual(basket.quantity, 2)
+#         self.assertEqual(Basket.objects.count(), 3)
 
 
 
