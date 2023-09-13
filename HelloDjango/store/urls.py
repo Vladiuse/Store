@@ -10,6 +10,7 @@ router.register(r'banners', views.BannerAddViewSet, basename='banners')
 router.register(r'books',views.BookListView)
 router.register(r'books',views.BookDetailView)
 router.register(r'comments', views.CommentDetailView)
+router.register(r'basket', views.BasketViewSet, basename='basket')
 
 
 urlpatterns = [

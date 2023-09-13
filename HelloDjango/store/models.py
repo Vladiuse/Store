@@ -281,6 +281,7 @@ class BasketQuerySet(models.QuerySet):
 
 
 class Basket(models.Model):
+    MAX_QUANTITY = 10
     objects = BasketQuerySet.as_manager()
 
     book = models.ForeignKey(
@@ -293,6 +294,9 @@ class Basket(models.Model):
     )
     quantity = models.SmallIntegerField(
         default=1,
+        validators=[
+            MinValueValidator(1), MaxValueValidator(MAX_QUANTITY)
+        ],
     )
     created = models.DateTimeField(
         auto_now_add=True,
@@ -307,7 +311,7 @@ class Basket(models.Model):
 
     @staticmethod
     def add(book, user):
-        Basket.objects.create(book=book, owner=user)
+        return Basket.objects.create(book=book, owner=user)
 
     # @staticmethod
     # def add(book, user):

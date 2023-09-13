@@ -127,7 +127,7 @@ class BookDetailView(mixins.RetrieveModelMixin,
             Basket.add(book, request.user)
             return Response(status=status.HTTP_201_CREATED)
         except IntegrityError:
-            data={'status': 'error', 'msg': 'Book already in basket'}
+            data = {'status': 'error', 'msg': 'Book already in basket'}
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -256,14 +256,12 @@ class BannerAddViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class BasketViewSet(mixins.RetrieveModelMixin,
-                    mixins.UpdateModelMixin,
+class BasketViewSet(mixins.UpdateModelMixin,
                     mixins.DestroyModelMixin,
                     mixins.ListModelMixin,
                     GenericViewSet):
-
     serializer_class = BasketSerializer
-    permissions = [permissions.IsAuthenticated, IsOwnerPermissions]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
 
     def get_queryset(self):
         return Basket.objects.filter(owner=self.request.user)
