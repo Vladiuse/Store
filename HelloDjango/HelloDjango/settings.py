@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'buttons.apps.ButtonsConfig',
     'store.apps.StoreConfig',
     'poligon.apps.PoligonConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 INTERNAL_IPS = [
