@@ -307,21 +307,26 @@ class Basket(models.Model):
 
     @staticmethod
     def add(book, user):
-        try:
-            basket = Basket.objects.get(owner=user, book=book)
-            basket.quantity = F('quantity') + 1
-            basket.save()
-            basket.refresh_from_db()
-        except Basket.DoesNotExist:
-            basket = Basket.objects.create(book=book, owner=user)
-        return basket
+        Basket.objects.create(book=book, owner=user)
 
-    @staticmethod
-    def remove(book, user):
-        basket = Basket.objects.get(owner=user, book=book)
-        if basket.quantity == 1:
-            raise LatsBasketItemError
-        basket.quantity = F('quantity') - 1
-        basket.save()
-        basket.refresh_from_db()
-        return basket
+    # @staticmethod
+    # def add(book, user):
+    #     try:
+    #         basket = Basket.objects.get(owner=user, book=book)
+    #         basket.quantity = F('quantity') + 1
+    #         basket.save()
+    #         basket.refresh_from_db()
+    #     except Basket.DoesNotExist:
+    #         basket = Basket.objects.create(book=book, owner=user)
+    #     return basket
+
+
+    # @staticmethod
+    # def remove(book, user):
+    #     basket = Basket.objects.get(owner=user, book=book)
+    #     if basket.quantity == 1:
+    #         raise LatsBasketItemError
+    #     basket.quantity = F('quantity') - 1
+    #     basket.save()
+    #     basket.refresh_from_db()
+    #     return basket
