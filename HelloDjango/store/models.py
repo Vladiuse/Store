@@ -8,7 +8,7 @@ from user_api.models import MyUser, Profile
 from django.db.models import Count
 from ordered_model.models import OrderedModel, OrderedModelManager
 from django.contrib.auth import get_user_model
-from .errors import LatsBasketItemError
+from .errors import LatsBasketItemError, EmptyOrderError
 
 User = get_user_model()
 
@@ -279,6 +279,13 @@ class BasketQuerySet(models.QuerySet):
     def total_quantity(self):
         return sum(basket.quantity for basket in self)
 
+    def to_json(self):
+        data = {
+            'total_sum': self.total_sum(),
+            'books': {book.data for book in self}
+        }
+        return data
+
 
 class Basket(models.Model):
     MAX_QUANTITY = 10
@@ -313,24 +320,17 @@ class Basket(models.Model):
     def add(book, user):
         return Basket.objects.create(book=book, owner=user)
 
-    # @staticmethod
-    # def add(book, user):
-    #     try:
-    #         basket = Basket.objects.get(owner=user, book=book)
-    #         basket.quantity = F('quantity') + 1
-    #         basket.save()
-    #         basket.refresh_from_db()
-    #     except Basket.DoesNotExist:
-    #         basket = Basket.objects.create(book=book, owner=user)
-    #     return basket
+    def to_json(self):
+        return {
+            'book_id': self.book.pk,
+            'price': self.book.price,
+            'total_price': self.sum,
+            'quantity': self.quantity,
+        }
+    @staticmethod
+    def make_order(user):
+        basket_items = Basket.objects.filter(owner=user)
+        if not len(basket_items):
+            raise EmptyOrderError
+        
 
-
-    # @staticmethod
-    # def remove(book, user):
-    #     basket = Basket.objects.get(owner=user, book=book)
-    #     if basket.quantity == 1:
-    #         raise LatsBasketItemError
-    #     basket.quantity = F('quantity') - 1
-    #     basket.save()
-    #     basket.refresh_from_db()
-    #     return basket

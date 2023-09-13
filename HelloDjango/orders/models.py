@@ -34,3 +34,5 @@ class Order(models.Model):
         default=CREATED,
     )
     basket_history = models.JSONField()
+
+
