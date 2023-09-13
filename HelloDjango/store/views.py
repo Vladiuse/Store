@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Count, Q
+from django.db import IntegrityError
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
@@ -10,9 +11,10 @@ from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework import permissions
 from rest_framework import status
 
-from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd
+from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd, Basket
 from .serializers import BookDetailSerializer, GenreSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer, CommentDetailSerializer
+    CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer, CommentDetailSerializer, \
+    BasketSerializer
 from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from shell import *
 from user_api.permisions import IsEmployee, IsModeratorOrReadOnly
@@ -60,7 +62,7 @@ class BookDetailView(mixins.RetrieveModelMixin,
     def get_permissions(self):
         if self.action in ('retrieve', 'similar_books',):
             permission_classes = []
-        elif self.action == 'favorite':
+        elif self.action in ('favorite', 'add_to_basket'):
             permission_classes = [permissions.IsAuthenticated, ]
         elif self.action == 'remove_from_favorite':
             permission_classes = [permissions.IsAuthenticated, IsOwnerPermissions]
@@ -118,6 +120,16 @@ class BookDetailView(mixins.RetrieveModelMixin,
         serializer = BookListSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data)
 
+    @action(detail=True, methods=['POST'])
+    def add_to_basket(self, request, pk):
+        book = self.get_object()
+        try:
+            Basket.add(book, request.user)
+            return Response(status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            data={'status': 'error', 'msg': 'Book already in basket'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
@@ -143,7 +155,7 @@ class CommentDetailView(mixins.RetrieveModelMixin,
     def perform_update(self, serializer):
         serializer.save(owner=self.request.user)
 
-    @action(detail=True,methods=['POST'],permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def like(self, request, pk):
         comment = self.get_object()
         like = comment.set_like(user=request.user)
@@ -151,12 +163,12 @@ class CommentDetailView(mixins.RetrieveModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @like.mapping.delete
-    def remove_like(self, request,pk):
+    def remove_like(self, request, pk):
         comment = self.get_object()
         comment.remove_like(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True,methods=['POST'],permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def dislike(self, request, pk):
         comment = self.get_object()
         like = comment.set_like(user=request.user)
@@ -164,7 +176,7 @@ class CommentDetailView(mixins.RetrieveModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @dislike.mapping.delete
-    def remove_dislike(self, request,pk):
+    def remove_dislike(self, request, pk):
         comment = self.get_object()
         comment.remove_dislike(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -192,7 +204,6 @@ class BookCommentListView(generics.ListCreateAPIView):
         context.update({"book": self.kwargs['book_id']})
         return context
 
-
     def list(self, request, *args, **kwargs):
         comments = self.get_queryset()
         comments_serializer = self.get_serializer(
@@ -212,7 +223,6 @@ class BookCommentListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user, book_id=self.kwargs['book_id'])
-
 
 
 @api_view(['GET'])
@@ -244,3 +254,22 @@ class BannerAddViewSet(viewsets.ModelViewSet):
         else:
             queryset = BannerAdd.public.all()
         return queryset
+
+
+class BasketViewSet(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    mixins.ListModelMixin,
+                    GenericViewSet):
+
+    serializer_class = BasketSerializer
+    permissions = [permissions.IsAuthenticated, IsOwnerPermissions]
+
+    def get_queryset(self):
+        return Basket.objects.filter(owner=self.request.user)
+
+    def make_order(self):
+        pass
+
+    # def perform_create(self, serializer):
+    #     serializer.save(owner=self.request.user)
