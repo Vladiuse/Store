@@ -1,7 +1,8 @@
-from rest_framework.test import APITestCase
+import json
+from rest_framework.test import APITestCase, APITransactionTestCase
 from os import path
 from faker import Faker
-from store.models import Book, Genre, Author, Comment, Favorite
+from store.models import Book, Genre, Author, Comment, Favorite, Basket
 import random as r
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import QuerySet
@@ -322,3 +323,39 @@ class BookViewSimilarBooksTest(APITestCase):
         res = self.client.get(self.similar_books, format='json')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), Book.SIMILAR_BOOKS_COUNT)
+
+class BookViewAddBasketTest(APITransactionTestCase):
+
+    def setUp(self) -> None:
+        self.user = create_user()
+        self.book = create_book()
+        self.book_add_to_basket_url = reverse('book-add-to-basket', args=[self.book.pk, ])
+
+    def test_no_auth(self):
+        res = self.client.post(self.book_add_to_basket_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_add_new(self):
+        self.client.force_login(user=self.user)
+        res = self.client.post(self.book_add_to_basket_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED, msg=res.data)
+        basket_count = Basket.objects.filter(owner=self.user,book=self.book).count()
+        self.assertEqual(basket_count, 1)
+        basket = Basket.objects.get(owner=self.user,book=self.book)
+        self.assertEqual(basket.quantity, 1)
+
+    def test_add_double(self):
+        self.client.force_login(user=self.user)
+        res = self.client.post(self.book_add_to_basket_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        basket_count = Basket.objects.filter(owner=self.user,book=self.book).count()
+        self.assertEqual(basket_count, 1)
+
+        res = self.client.post(self.book_add_to_basket_url, format='json')
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        res_data = json.loads(res.content)
+        self.assertEqual(res_data['status'], 'error')
+        basket = Basket.objects.filter(owner=self.user,book=self.book)
+        self.assertEqual(len(basket), 1)
+
+
