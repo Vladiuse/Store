@@ -7,6 +7,7 @@ from .serializers import NoteSerializer, RecordSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from time import time, sleep
 
 @api_view()
 def app_root(request, format=None):
@@ -25,3 +26,8 @@ class RecordViewSet(ModelViewSet):
     queryset = Record.objects.all()
     serializer_class = RecordSerializer
     permission_classes = [IsAuthenticated,]
+
+
+def sleep_2(request):
+    sleep(2)
+    return HttpResponse(f'xxx{time()}')
