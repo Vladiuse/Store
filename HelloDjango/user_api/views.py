@@ -28,7 +28,7 @@ def api_root(request, format=None):
         urls.update({
             'users': reverse('myuser-list', request=request, format=format),
             'profiles': reverse('profile-list', request=request, format=format),
-            'favorite': reverse('favorite', request=request, format=format),
+            'favorite': reverse('favorite-books', request=request, format=format),
         })
     return Response(urls)
 

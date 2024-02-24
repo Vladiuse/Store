@@ -15,7 +15,7 @@ router.register(r'basket', views.BasketViewSet, basename='basket')
 
 urlpatterns = [
     path('', views.store_root, name='store'),
-    path('favorite/', views.favorite_books, name='favorite-books'),
+    path('favorite/', views.favorite_books,name='favorite-books'),
     path('books/<int:book_id>/comments/', views.BookCommentListView.as_view(), name='book-comment-list'),
     path('', include(router.urls)),
 ]
