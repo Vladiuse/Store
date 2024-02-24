@@ -27,8 +27,8 @@ def store_root(request, format=None):
         'books': reverse('book-list', request=request, format=format),
         'genres': reverse('genre-list', request=request, format=format),
         'authors': reverse('author-list', request=request, format=format),
-        'comments': reverse('comments-list', request=request, format=format),
-        'banners': reverse('banneradd-list', request=request, format=format),
+        #'comments': reverse('comments-list', request=request, format=format),
+        'banners': reverse('banners-list', request=request, format=format),
     }
 
     if request.user.is_authenticated:
