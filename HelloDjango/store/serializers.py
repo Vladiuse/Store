@@ -4,10 +4,23 @@ from ordered_model.serializers import OrderedModelSerializer
 from rest_framework.validators import UniqueTogetherValidator
 
 
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = '__all__'
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ['id', 'name']
+
+
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = '__all__'
+
 
 class CurrentBook:
     requires_context = True
@@ -18,16 +31,17 @@ class CurrentBook:
     def __repr__(self):
         return '%s()' % self.__class__.__name__
 
+
 class CommentSerializer(serializers.ModelSerializer):
     # user = serializers.StringRelatedField(source='user.username', read_only=True)
-    url = serializers.HyperlinkedIdentityField(view_name='comment-detail',)
+    url = serializers.HyperlinkedIdentityField(view_name='comment-detail', )
     like_count = serializers.IntegerField(read_only=True)
     dislike_count = serializers.IntegerField(read_only=True)
     like = serializers.HyperlinkedIdentityField(view_name='comment-like')
     dislike = serializers.HyperlinkedIdentityField(view_name='comment-dislike')
     user_like = serializers.SerializerMethodField('get_user', read_only=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
-    book = serializers.PrimaryKeyRelatedField(read_only=True, default=CurrentBook(),)
+    book = serializers.PrimaryKeyRelatedField(read_only=True, default=CurrentBook(), )
 
     def get_user(self, obj):
         request = self.context['request']
@@ -51,10 +65,11 @@ class CommentSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def to_representation(self, instance):
-        obj = super().to_representation(instance)
-        obj['stars'] = '*' * obj['stars']
-        return obj
+    # def to_representation(self, instance):
+    #     obj = super().to_representation(instance)
+    #     obj['stars'] = '*' * obj['stars']
+    #     return obj
+
 
 class CommentDetailSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
@@ -81,7 +96,8 @@ class BookPrideSerializer(serializers.ModelSerializer):
 
 
 class BookDetailSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()
+    genre = GenreSerializer(many=True)
+    author = AuthorSerializer()
     comments_count = serializers.IntegerField(read_only=True)
     comments_stars_stat = serializers.DictField(read_only=True)
     comments = serializers.HyperlinkedIdentityField(
@@ -100,22 +116,12 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
 class BookListSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='book-detail')
+    genre = GenreSerializer(many=True)
+    author = AuthorSerializer()
 
     class Meta:
         model = Book
         exclude = ['description']
-
-
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        fields = '__all__'
-
-
-class AuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Author
-        fields = ['id', 'name']
 
 
 class TestSerializer(serializers.HyperlinkedModelSerializer):
@@ -129,8 +135,8 @@ class BannerAddSerializer(OrderedModelSerializer):
         model = BannerAdd
         fields = '__all__'
 
-class BasketSerializer(serializers.ModelSerializer):
 
+class BasketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Basket
         fields = '__all__'
