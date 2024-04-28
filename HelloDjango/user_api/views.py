@@ -69,7 +69,7 @@ class UserLogoutView(APIView):
 
 class UserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (authentication.SessionAuthentication,)
+    authentication_classes = (authentication.SessionAuthentication,authentication.BasicAuthentication)
 
     ##
     def get(self, request):

@@ -168,7 +168,7 @@ class BookViewCreateTest(APITestCase):
         genre = create_genre()
         data['genre'] = genre.pk
         res = self.client.post(url, data=data, format='multipart')
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED, msg=str(res.json()))
 
 
 class BookViewUpdateTest(APITestCase):

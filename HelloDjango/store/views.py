@@ -13,7 +13,7 @@ from rest_framework import status
 
 from .models import Book, Genre, Author, Comment, Favorite, Test, Like, BannerAdd, Basket
 from .serializers import BookDetailSerializer, GenreSerializer, AuthorSerializer, \
-    CommentSerializer, BookListSerializer, TestSerializer, LikeSerializer, BannerAddSerializer, CommentDetailSerializer, \
+    CommentSerializer, BookListSerializer, BookCreateSerializer,TestSerializer, LikeSerializer, BannerAddSerializer, CommentDetailSerializer, \
     BasketSerializer
 from user_api.permisions import IsOwnerPermissions, IsModeratorPermissions, IsOwnerPermissionsSafe
 from shell import *
@@ -50,6 +50,12 @@ class BookListView(mixins.CreateModelMixin,
         else:
             permission_classes = [permissions.IsAuthenticated, IsEmployee, IsModeratorPermissions]
         return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return BookListSerializer
+        else:
+            return BookCreateSerializer
 
 
 class BookDetailView(mixins.RetrieveModelMixin,

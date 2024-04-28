@@ -116,14 +116,26 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
 class BookListSerializer(serializers.ModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='book-detail')
-    genre = GenreSerializer(many=True)
+    genre = GenreSerializer(many=True, )
     author = AuthorSerializer()
 
     class Meta:
         model = Book
         exclude = ['description']
+class BookCreateSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='book-detail')
+    genre = serializers.PrimaryKeyRelatedField(many=True, queryset=Genre.objects.all())
+    author = serializers.PrimaryKeyRelatedField(queryset=Author.objects.all())
 
+    class Meta:
+        model = Book
+        fields = '__all__'
 
+    def validate_genre(self,value):
+        print(value, type(value))
+        if not value:
+            raise serializers.ValidationError("Genre cant be empty")
+        return value
 class TestSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Test
